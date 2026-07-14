@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUserProfile, UserProfile } from '../hooks/useUserProfile';
 import { ArrowLeftIcon } from './icons/ArrowLeftIcon';
 
@@ -9,6 +9,10 @@ interface EditProfilePageProps {
 const EditProfilePage: React.FC<EditProfilePageProps> = ({ onNavigateBack }) => {
   const [profile, updateProfile] = useUserProfile();
   const [formData, setFormData] = useState<UserProfile>(profile);
+
+  useEffect(() => {
+    setFormData(profile);
+  }, [profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -28,7 +32,7 @@ const EditProfilePage: React.FC<EditProfilePageProps> = ({ onNavigateBack }) => 
             </button>
             <div className="flex items-center ml-2">
                 <span className="h-8 w-px bg-green-700 mr-2"></span>
-                <span className="text-2xl font-medium tracking-wider text-brand-primary">GSOM</span>
+                <span className="text-2xl font-medium tracking-wider text-brand-primary">BEHOLD</span>
             </div>
       </header>
       
@@ -36,7 +40,7 @@ const EditProfilePage: React.FC<EditProfilePageProps> = ({ onNavigateBack }) => 
         <h1 className="text-4xl font-medium text-brand-primary">Edit Profile</h1>
         
         <section className="flex flex-col items-center text-center mt-8">
-            <div className="w-28 h-28 rounded-full bg-gray-300 bg-cover bg-center" style={{ backgroundImage: "url('https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')" }}></div>
+            <div className="w-28 h-28 rounded-full bg-gray-300 bg-cover bg-center" style={{ backgroundImage: `url('${formData.avatarUrl || profile.avatarUrl}')` }}></div>
         </section>
 
         <section className="mt-12 space-y-6">

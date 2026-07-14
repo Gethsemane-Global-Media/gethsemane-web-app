@@ -22,18 +22,10 @@ export const PlanIcon: React.FC<PlanIconProps> = ({
     aria-label={ariaLabel}
   >
     <path 
-      d="M8 2v3m8-3v3M3.5 9.09h17M21 8.5V17c0 3-1.5 5-5 5H8c-3.5 0-5-2-5-5V8.5c0-3 1.5-5 5-5h8c3.5 0 5 2 5 5Z" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    />
-    <path 
-      d="m11.995 13.7-2.5 2.5L8.5 15.203" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
+      fillRule="evenodd" 
+      clipRule="evenodd" 
+      fill="currentColor"
+      d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10Zm1.13-15.52-4.5 5.62h2.95l-.71 5.42 4.5-5.62h-2.95l.71-5.42Z" 
     />
   </svg>
 );

@@ -6,7 +6,7 @@ const SplashScreen: React.FC = () => {
       <div className="flex items-center">
         <span className="h-10 w-px bg-brand-dark mr-4"></span>
         <span className="text-4xl font-medium tracking-[0.2em] text-brand-dark">
-          GSOM
+          BEHOLD
         </span>
       </div>
     </div>

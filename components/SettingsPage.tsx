@@ -7,92 +7,110 @@ import { useUserProfile } from '../hooks/useUserProfile';
 import ShareModal from './ShareModal';
 
 interface SettingsPageProps {
-    onNavigateToEditProfile: () => void;
-    onNavigateToNotificationSettings: () => void;
-    onNavigateToCreatePlan: () => void;
-    onNavigateToBookmarks: () => void; // Kept for type compatibility, but not used in UI
-    onNavigateBack: () => void;
+  onNavigateToEditProfile: () => void;
+  onNavigateToNotificationSettings: () => void;
+  onNavigateToCreatePlan: () => void;
+  onNavigateToBookmarks: () => void;
+  onNavigateBack: () => void;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigateToEditProfile, onNavigateToNotificationSettings, onNavigateToCreatePlan, onNavigateBack }) => {
-    const [profile] = useUserProfile();
-    const [showShareModal, setShowShareModal] = useState(false);
+const SettingsPage: React.FC<SettingsPageProps> = ({
+  onNavigateToEditProfile,
+  onNavigateToNotificationSettings,
+  onNavigateToCreatePlan,
+}) => {
+  const [profile] = useUserProfile();
+  const [showShareModal, setShowShareModal] = useState(false);
 
-    const settingsItems = [
-        { icon: <PlusCircleIcon />, label: 'Create Bible plans', onClick: onNavigateToCreatePlan },
-        { icon: <PlayCircleIcon />, label: 'Audio Scripture', onClick: () => {} },
-        { icon: <NotificationIcon />, label: 'Notification settings', onClick: onNavigateToNotificationSettings },
-    ];
+  const settingsItems = [
+    { icon: <PlusCircleIcon />, label: 'Create Bible plans', onClick: onNavigateToCreatePlan },
+    { icon: <PlayCircleIcon />, label: 'Audio Scripture', onClick: () => {} },
+    { icon: <NotificationIcon />, label: 'Notification settings', onClick: onNavigateToNotificationSettings },
+  ];
 
-    const handleShare = async () => {
-        const shareData = {
-            title: 'GSOM App',
-            text: 'Join me on GSOM to grow your faith!',
-            url: window.location.href,
-        };
-
-        if (navigator.share) {
-            try {
-                await navigator.share(shareData);
-            } catch (err) {
-                console.error('Error sharing:', err);
-                 // Fallback to modal if user cancels share sheet on some devices or an error occurs.
-                setShowShareModal(true);
-            }
-        } else {
-            // Fallback for browsers that don't support the Web Share API
-            setShowShareModal(true);
-        }
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Behold App',
+      text: 'Join me on Behold to grow your faith!',
+      url: window.location.href,
     };
 
-    return (
-        <div className="flex-grow flex flex-col">
-            <header className="flex items-center p-6 h-20 shrink-0">
-                <div className="flex items-center">
-                    <span className="h-8 w-px bg-brand-green mr-2"></span>
-                    <span className="text-2xl font-medium tracking-wider text-brand-green">GSOM</span>
-                </div>
-            </header>
-            <main className="flex-grow px-6 pb-6 flex flex-col">
-                <h1 className="text-4xl font-medium text-brand-primary">Settings</h1>
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch {
+        setShowShareModal(true);
+      }
+    } else {
+      setShowShareModal(true);
+    }
+  };
 
-                <section className="flex flex-col items-center text-center mt-8 relative">
-                    <div className="w-28 h-28 rounded-full bg-gray-300 bg-cover bg-center" style={{ backgroundImage: "url('https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')" }}></div>
-                    {/* Decorative line */}
-                    <div className="absolute top-14 left-1/2 pl-14">
-                        <div className="relative">
-                            <div className="w-10 h-px bg-brand-primary transform -translate-y-1/2"></div>
-                            <div className="absolute right-0 top-1/2 w-1.5 h-1.5 bg-brand-primary rounded-full transform -translate-y-1/2 translate-x-1/2"></div>
-                        </div>
-                    </div>
-                    <div className="mt-4">
-                        <h2 className="text-2xl font-medium text-brand-dark">{profile.name}</h2>
-                        <p className="text-brand-secondary text-sm">{profile.role}</p>
-                    </div>
-                    <button onClick={onNavigateToEditProfile} className="mt-2 text-brand-primary font-medium text-sm hover:underline">
-                        Edit profile
-                    </button>
-                </section>
+  return (
+    <div className="flex-grow flex flex-col">
+      <header className="flex items-center gap-2 px-6 h-20 shrink-0">
+        <div className="h-10 w-px bg-brand-green" />
+        <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
+      </header>
 
-                <section className="mt-12 space-y-6">
-                    {settingsItems.map((item, index) => (
-                        <button key={index} onClick={item.onClick} className="flex items-center w-full text-left gap-4 text-brand-primary text-lg">
-                            {item.icon}
-                            <span>{item.label}</span>
-                        </button>
-                    ))}
-                </section>
-                
-                <section className="mt-auto pb-24 text-center">
-                    <button onClick={handleShare} className="flex items-center justify-center gap-3 text-brand-accent font-semibold mx-auto">
-                        <ShareIcon />
-                        <span>Share with friends</span>
-                    </button>
-                </section>
-            </main>
-            {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} />}
-        </div>
-    );
+      <main className="flex-grow px-6 pb-6 flex flex-col">
+        <h1 className="text-4xl font-bold text-brand-dark">Settings</h1>
+
+        <section className="mt-8">
+          <div className="flex items-start gap-5">
+            <div className="shrink-0">
+              <div
+                className="w-24 h-24 rounded-full bg-gray-200 bg-cover bg-center"
+                style={{ backgroundImage: `url('${profile.avatarUrl}')` }}
+                role="img"
+                aria-label={`${profile.name}'s profile`}
+              />
+              <button
+                onClick={onNavigateToEditProfile}
+                className="mt-3 text-brand-dark font-medium text-sm hover:underline"
+              >
+                Edit profile
+              </button>
+            </div>
+
+            <div className="relative pt-3 min-w-0 flex-1">
+              <div className="absolute -left-5 top-8 flex items-center">
+                <div className="w-4 h-px bg-brand-primary" />
+                <div className="w-1.5 h-1.5 bg-brand-primary rounded-full" />
+              </div>
+              <h2 className="text-xl font-medium text-brand-dark leading-tight">{profile.name}</h2>
+              <p className="text-brand-secondary text-sm mt-1">{profile.role}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-12 space-y-7">
+          {settingsItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={item.onClick}
+              className="flex items-center w-full text-left gap-4 text-brand-dark text-lg"
+            >
+              <span className="text-brand-primary shrink-0">{item.icon}</span>
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </section>
+
+        <section className="mt-auto pb-24 pt-10 text-center">
+          <button
+            onClick={handleShare}
+            className="inline-flex items-center justify-center gap-3 text-brand-accent font-semibold"
+          >
+            <ShareIcon />
+            <span>Share with friends</span>
+          </button>
+        </section>
+      </main>
+
+      {showShareModal && <ShareModal onClose={() => setShowShareModal(false)} />}
+    </div>
+  );
 };
 
 export default SettingsPage;

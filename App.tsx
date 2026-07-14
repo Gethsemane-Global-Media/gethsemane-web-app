@@ -3,6 +3,7 @@ import AuthPage from './components/AuthPage';
 import MainApp from './components/MainApp';
 import SplashScreen from './components/SplashScreen';
 import OnboardingPage from './components/OnboardingPage';
+import { UserProfileProvider } from './hooks/useUserProfile';
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -37,9 +38,11 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="font-sans">
-      {isLoggedIn ? <MainApp /> : <AuthPage onLoginSuccess={handleLoginSuccess} />}
-    </div>
+    <UserProfileProvider>
+      <div className="font-sans">
+        {isLoggedIn ? <MainApp /> : <AuthPage onLoginSuccess={handleLoginSuccess} />}
+      </div>
+    </UserProfileProvider>
   );
 };
 

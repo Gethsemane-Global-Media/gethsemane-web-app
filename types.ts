@@ -9,12 +9,16 @@ export enum AuthView {
   FORGOT_PASSWORD_SENT,
 }
 
+export type PlanCategory = 'new-testament' | 'old-testament' | 'devotional' | 'epistles' | 'gospels';
+
 export interface Plan {
   id: string;
   title: string;
   description: string;
   longDescription: string;
   type: 'community' | 'user';
+  category?: PlanCategory;
+  participantCount?: number;
   details: {
     duration: string;
     ends: string;

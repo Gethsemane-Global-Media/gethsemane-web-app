@@ -5,7 +5,6 @@ import { getBibleText, getChapterText } from '../data/bibleTextManager';
 import { ReaderPageWithErrorBoundary } from './ReaderPage';
 import ReferencesPage from './ReferencesPage';
 import ReferenceSelectorPage from './ReferenceSelectorPage';
-import BibleNavigationModal from './BibleNavigationModal';
 
 interface SearchResult {
   version: string;
@@ -21,9 +20,18 @@ interface BibleNavTarget {
     verse: number | null;
 }
 
+interface PlanReadingSession {
+  planId: string;
+  book: string;
+  startChapter: number;
+  endChapter: number;
+}
+
 interface BiblePageProps {
     initialTarget: BibleNavTarget | null;
     onNavigationHandled: () => void;
+    planReadingSession?: PlanReadingSession | null;
+    onDailyReadingComplete?: () => void;
 }
 
 // Error Boundary Component
@@ -62,7 +70,7 @@ class BiblePageErrorBoundary extends Component<{ children: ReactNode }, { hasErr
     }
 }
 
-const LAST_READ_KEY = 'gsom-last-read';
+const LAST_READ_KEY = 'behold-last-read';
 
 const parseChapterText = (chapterText: string): { number: string; text: string }[] => {
     if (!chapterText || typeof chapterText !== 'string') return [];
@@ -97,7 +105,12 @@ const parseChapterText = (chapterText: string): { number: string; text: string }
 };
 
 
-const BiblePage: React.FC<BiblePageProps> = ({ initialTarget, onNavigationHandled }) => {
+const BiblePage: React.FC<BiblePageProps> = ({
+  initialTarget,
+  onNavigationHandled,
+  planReadingSession = null,
+  onDailyReadingComplete,
+}) => {
     const [currentBook, setCurrentBook] = useState(() => {
         try { 
             const saved = localStorage.getItem(LAST_READ_KEY); 
@@ -135,7 +148,6 @@ const BiblePage: React.FC<BiblePageProps> = ({ initialTarget, onNavigationHandle
     
     const [isSelectingVersion, setIsSelectingVersion] = useState(false);
     const [isSelectingReference, setIsSelectingReference] = useState(false);
-    const [isNavModalOpen, setIsNavModalOpen] = useState(false);
     const [scrollToVerse, setScrollToVerse] = useState<number | null>(null);
 
     const [parsedVerses, setParsedVerses] = useState<{ number: string; text: string }[]>([]);
@@ -236,13 +248,38 @@ const BiblePage: React.FC<BiblePageProps> = ({ initialTarget, onNavigationHandle
 
     const totalChapters = BIBLE_CHAPTERS[currentBook] || 1;
 
+    const isPlanReading =
+      planReadingSession !== null &&
+      currentBook === planReadingSession.book;
+
+    const planChapterProgress = useMemo(() => {
+      if (!isPlanReading || !planReadingSession) return 0;
+      const total = planReadingSession.endChapter - planReadingSession.startChapter + 1;
+      const current = currentChapter - planReadingSession.startChapter + 1;
+      return Math.min(100, Math.round((current / total) * 100));
+    }, [isPlanReading, planReadingSession, currentChapter]);
+
     const handlePrevChapter = useCallback(() => {
+        if (isPlanReading && planReadingSession) {
+          if (currentChapter > planReadingSession.startChapter) {
+            setCurrentChapter((c) => c - 1);
+          }
+          return;
+        }
         if (currentChapter > 1) setCurrentChapter(c => c - 1);
-    }, [currentChapter]);
+    }, [currentChapter, isPlanReading, planReadingSession]);
 
     const handleNextChapter = useCallback(() => {
+        if (isPlanReading && planReadingSession) {
+          if (currentChapter < planReadingSession.endChapter) {
+            setCurrentChapter((c) => c + 1);
+          } else {
+            onDailyReadingComplete?.();
+          }
+          return;
+        }
         if (currentChapter < totalChapters) setCurrentChapter(c => c + 1);
-    }, [currentChapter, totalChapters]);
+    }, [currentChapter, totalChapters, isPlanReading, planReadingSession, onDailyReadingComplete]);
 
     const handleSelectReference = useCallback((book: string, chapter: number, verse: number | null) => {
         setCurrentBook(book);
@@ -376,19 +413,21 @@ const BiblePage: React.FC<BiblePageProps> = ({ initialTarget, onNavigationHandle
                 isSearching={isSearching}
                 onSearchingChange={setIsSearching}
                 onOpenVersionSelector={() => setIsSelectingVersion(true)}
-                onOpenReferenceSelector={() => setIsNavModalOpen(true)}
+                onOpenReferenceSelector={() => setIsSelectingReference(true)}
                 scrollToVerse={scrollToVerse}
                 onScrolledToVerse={() => setScrollToVerse(null)}
-            />
-            <BibleNavigationModal
-                isOpen={isNavModalOpen}
-                onClose={() => setIsNavModalOpen(false)}
-                onSelect={(book, chapter) => {
-                    handleSelectReference(book, chapter, null);
-                    setIsNavModalOpen(false);
-                }}
-                currentBook={currentBook}
-                currentChapter={currentChapter}
+                isPlanReadingMode={isPlanReading}
+                planChapterProgress={planChapterProgress}
+                canGoPrevChapter={
+                  isPlanReading && planReadingSession
+                    ? currentChapter > planReadingSession.startChapter
+                    : currentChapter > 1
+                }
+                canGoNextChapter={
+                  isPlanReading && planReadingSession
+                    ? true
+                    : currentChapter < totalChapters
+                }
             />
         </>
     );

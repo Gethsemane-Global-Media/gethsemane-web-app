@@ -90,17 +90,21 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     AuthView.FORGOT_PASSWORD_SENT,
   ].includes(view);
 
+  const isSuccessView = view === AuthView.SUCCESS;
+
   return (
     <div className="bg-brand-bg min-h-screen flex flex-col p-6 max-w-md mx-auto">
-      <header className="flex items-center h-16">
+      <header className={`flex items-center shrink-0 ${isSuccessView ? 'h-20' : 'h-16'}`}>
         {showBackButton && (
           <button onClick={handleBack} className="text-brand-primary p-2 -ml-2">
             <ArrowLeftIcon />
           </button>
         )}
-        <div className="flex-grow flex items-center">
-          <span className="h-8 w-px bg-green-800 mr-2"></span>
-          <span className="text-2xl font-medium tracking-wider text-brand-primary">GSOM</span>
+        <div className={`flex items-center gap-2 ${showBackButton ? 'flex-grow' : ''}`}>
+          <div className="h-10 w-px bg-brand-green" />
+          <span className={`font-medium tracking-wider text-brand-green ${isSuccessView ? 'text-3xl' : 'text-2xl'}`}>
+            BEHOLD
+          </span>
         </div>
       </header>
       

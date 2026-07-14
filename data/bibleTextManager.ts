@@ -67,7 +67,7 @@ export const parseChapterText = (chapterText: string): Verse[] => {
 import { BIBLE_VERSIONS, BibleVersion } from './bibleVersions';
 import { BIBLE_BOOKS_LIST } from './bibleBooks';
 
-const BIBLE_TEXT_KEY = 'gsom-bible-text-v1';
+const BIBLE_TEXT_KEY = 'behold-bible-text-v1';
 
 type BibleData = { [version: string]: { [book: string]: { [chapter: number]: string } } };
 
@@ -141,8 +141,42 @@ const BOOK_MAPPING: { [key: string]: string } = {
   'Revelation': 'REV'
 };
 
+// Versions served from bundled files in public/bible/<version>/ instead of the external API
+const LOCAL_BIBLE_VERSIONS = new Set(['AMP', 'NLT', 'KJV']);
+const localBookCache: { [key: string]: { [chapter: string]: string } } = {};
+
+const getLocalChapterText = async (version: string, book: string, chapter: number): Promise<string> => {
+  const fileName = book.toLowerCase().replace(/\s+/g, '-');
+  const cacheKey = `${version}/${fileName}`;
+
+  let bookData = localBookCache[cacheKey];
+  if (!bookData) {
+    const response = await fetch(`/bible/${version.toLowerCase()}/${fileName}.json`);
+    if (!response.ok) {
+      throw new Error(`Failed to load local bible data for ${book} (${version})`);
+    }
+    bookData = await response.json();
+    localBookCache[cacheKey] = bookData;
+  }
+
+  const text = bookData[String(chapter)];
+  if (!text) {
+    throw new Error(`Chapter ${chapter} not found in local ${version} data for ${book}`);
+  }
+  return text;
+};
+
 // New async function for dynamic chapter loading
 export const getChapterText = async (version: string, book: string, chapter: number): Promise<string> => {
+  if (LOCAL_BIBLE_VERSIONS.has(version.toUpperCase())) {
+    try {
+      return await getLocalChapterText(version, book, chapter);
+    } catch (error) {
+      console.error(`Error loading local chapter ${book} ${chapter} (${version}):`, error);
+      return 'Bible text not available.';
+    }
+  }
+
   const key = `bible-chapter-${version}-${book}-${chapter}`;
   console.log(`Loading chapter: ${version} ${book} ${chapter}`);
   

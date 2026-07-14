@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { UserProfile } from '../hooks/useUserProfile';
+import { UserProfile, getFirstName } from '../hooks/useUserProfile';
 import { Plan } from '../types';
 import { BIBLE_CHAPTERS } from '../data/bibleBooks';
 import { CalendarIcon } from './icons/CalendarIcon';
@@ -8,11 +8,11 @@ import { RefreshIcon } from './icons/RefreshIcon';
 interface HomePageProps {
   userProfile: UserProfile;
   activePlan: Plan | null;
+  isDailyTaskCompleted: boolean;
   onNavigateToPlan: () => void;
-  onContinueReading: (book: string, chapter: number) => void;
+  onContinueReading: (book: string, chapters: string) => void;
 }
 
-// This helper function calculates the reading schedule for a given plan.
 const generateReadingSchedule = (plan: Plan): string[] => {
     const schedule: string[] = [];
     if (!plan.details.books) return [];
@@ -41,7 +41,18 @@ const generateReadingSchedule = (plan: Plan): string[] => {
     return schedule;
 };
 
-const HomePage: React.FC<HomePageProps> = ({ userProfile, activePlan, onNavigateToPlan, onContinueReading }) => {
+const getBookDisplayName = (book: string) => {
+  if (book.endsWith('s')) return book.slice(0, -1);
+  return book;
+};
+
+const HomePage: React.FC<HomePageProps> = ({
+  userProfile,
+  activePlan,
+  isDailyTaskCompleted,
+  onNavigateToPlan,
+  onContinueReading,
+}) => {
   const [bibleFact, setBibleFact] = useState<string>('');
   const [isLoadingFact, setIsLoadingFact] = useState(true);
   const [currentTip, setCurrentTip] = useState(0);
@@ -72,11 +83,11 @@ const HomePage: React.FC<HomePageProps> = ({ userProfile, activePlan, onNavigate
                 headers: {
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json',
-                    'HTTP-Referer': 'https://your-app-url.com', // Replace with your actual app URL
-                    'X-Title': 'GSOM Bible App',
+                    'HTTP-Referer': window.location.origin,
+                    'X-Title': 'Behold Bible App',
                 },
                 body: JSON.stringify({
-                    model: 'openai/gpt-3.5-turbo', // or another model available on OpenRouter
+                    model: 'openai/gpt-3.5-turbo',
                     messages: [
                         {
                             role: 'user',
@@ -97,7 +108,7 @@ const HomePage: React.FC<HomePageProps> = ({ userProfile, activePlan, onNavigate
             setBibleFact(fact);
         } catch (error) {
             console.error("Failed to fetch Bible fact:", error);
-            setBibleFact("The word KOINONIA means fellowship and it connotes intimacy and communion."); // Fallback fact
+            setBibleFact("The word KOINONIA means fellowship and it connotes intimacy and communion.");
         } finally {
             setIsLoadingFact(false);
         }
@@ -105,10 +116,8 @@ const HomePage: React.FC<HomePageProps> = ({ userProfile, activePlan, onNavigate
     fetchBibleFact();
   }, []);
 
-  // Tips carousel slides; ensure at least 3 slides for pagination feel
   const tips = useMemo(() => {
     const base = bibleFact ? [bibleFact] : [];
-    // Fill up to 3 slides by repeating the fact if needed
     const filled = [...base];
     while (filled.length < 3) filled.push(base[0] || 'The word KOINONIA means fellowship and it connotes intimacy and communion.');
     return filled.slice(0, 3);
@@ -165,90 +174,130 @@ const HomePage: React.FC<HomePageProps> = ({ userProfile, activePlan, onNavigate
     };
   }, [activePlan]);
   
-  const firstName = userProfile.name.split(' ')[0];
+  const firstName = getFirstName(userProfile.name);
+
+  const doYouKnowSection = (
+    <section className="mt-10">
+      <h3 className="text-2xl font-bold text-brand-dark">Do you know!</h3>
+      <div 
+        className="relative mt-4 bg-[#E8EDE3] rounded-2xl min-h-[96px] overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {isLoadingFact ? (
+          <div className="p-6 animate-pulse flex space-x-4 w-full">
+              <div className="flex-1 space-y-3 py-1">
+                <div className="h-2 bg-gray-200 rounded"></div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="h-2 bg-gray-200 rounded col-span-2"></div>
+                  <div className="h-2 bg-gray-200 rounded col-span-1"></div>
+                </div>
+              </div>
+            </div>
+        ) : (
+          tips.map((tip, index) => (
+            <div
+              key={index}
+              className="absolute inset-0 p-6 flex items-center"
+              style={{
+                transform: `translateX(calc(${(index - currentTip) * 100}% + ${dragOffset}px))`,
+                transition: isDragging ? 'none' : 'transform 0.4s ease-in-out',
+              }}
+            >
+              <p className="text-brand-primary leading-relaxed text-[15px]">{tip}</p>
+            </div>
+          ))
+        )}
+      </div>
+      <div className="flex justify-center items-center gap-2 mt-4">
+        {tips.map((_, i) => (
+          <div
+            key={i}
+            className={`rounded-full transition-all ${
+              i === currentTip ? 'w-5 h-2 bg-brand-dark' : 'w-2 h-2 bg-gray-300'
+            }`}
+          />
+        ))}
+      </div>
+    </section>
+  );
+
+  const todaysTaskSection = planDetails ? (
+    <section className="mt-8 pb-24">
+      <h3 className="text-base font-medium text-brand-primary">Today&apos;s task</h3>
+      <div className="mt-3 relative overflow-hidden rounded-2xl p-5 min-h-[130px] bg-gradient-to-r from-[#2F4A35] via-[#4A7350] to-[#7BA67F] flex flex-col justify-end">
+        <div className="inline-block self-start bg-brand-orange text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+          Day {planDetails.dayOfPlan}
+        </div>
+        <p className="text-4xl font-bold text-white leading-tight">
+          {getBookDisplayName(planDetails.book)}
+        </p>
+      </div>
+    </section>
+  ) : null;
 
   return (
-    <main className="flex-grow p-6 pt-2 overflow-y-auto">
+    <main className="flex-grow px-6 pt-2 overflow-y-auto">
       {activePlan && planDetails && planDetails.todaysReading ? (
         <>
-          <section className="mt-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <div className="flex justify-between items-start">
-              <div className="text-brand-dark">
-                  <h2 className="text-3xl">{activePlan.title}</h2>
-              </div>
-              <div className="text-right shrink-0 ml-4">
+          {isDailyTaskCompleted ? (
+            <section className="mt-6">
+              <div className="flex justify-between items-start gap-4">
+                <h2 className="text-3xl text-brand-dark leading-tight max-w-[50%]">
+                  {activePlan.title}
+                </h2>
+                <div className="text-right shrink-0">
                   <p className="text-sm text-brand-secondary">{currentDate}</p>
-                  <h2 className="text-4xl font-bold mt-1 leading-tight">{planDetails.book}</h2>
-                  <p className="text-4xl font-bold leading-tight">{planDetails.chapters}</p>
+                  <h2 className="text-2xl font-bold text-brand-dark mt-1 leading-tight">
+                    Daily task<br />completed
+                  </h2>
+                </div>
               </div>
-            </div>
-            <button
-                onClick={() => onContinueReading(planDetails.book, parseInt(planDetails.chapters.split('-')[0], 10))}
-                className="w-full mt-4 py-3 bg-brand-dark text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
-            >
-                Continue
-            </button>
-            <div className="flex justify-between items-center mt-4 text-brand-secondary text-sm px-2">
-              <div className="flex items-center gap-2">
-                  <CalendarIcon />
+              <div className="flex justify-between items-center mt-6 text-brand-secondary text-sm">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon size={20} className="text-brand-secondary" />
                   <span>Day {planDetails.dayOfPlan}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                  <RefreshIcon />
+                </div>
+                <div className="flex items-center gap-2">
+                  <RefreshIcon size={20} className="text-brand-secondary" />
                   <span>{planDetails.progress}% done</span>
+                </div>
               </div>
-            </div>
-          </section>
-
-          <section className="mt-10">
-            <h3 className="text-2xl font-bold text-brand-dark">Do you know!</h3>
-            <div 
-              className="relative mt-4 bg-white rounded-2xl shadow-sm min-h-[96px] border border-gray-100 overflow-hidden"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              {isLoadingFact ? (
-                <div className="p-6 animate-pulse flex space-x-4 w-full">
-                    <div className="flex-1 space-y-3 py-1">
-                      <div className="h-2 bg-gray-200 rounded"></div>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="h-2 bg-gray-200 rounded col-span-2"></div>
-                        <div className="h-2 bg-gray-200 rounded col-span-1"></div>
-                      </div>
-                    </div>
-                  </div>
-              ) : (
-                tips.map((tip, index) => (
-                  <div
-                    key={index}
-                    className="absolute inset-0 p-6 flex items-center"
-                    style={{
-                      transform: `translateX(calc(${(index - currentTip) * 100}% + ${dragOffset}px))`,
-                      transition: isDragging ? 'none' : 'transform 0.4s ease-in-out',
-                    }}
-                  >
-                    <p className="text-brand-primary leading-relaxed">{tip}</p>
-                  </div>
-                ))
-              )}
-            </div>
-             <div className="flex justify-center items-center gap-2 mt-4">
-              {tips.map((_, i) => (
-                <div key={i} className={`${i === currentTip ? 'w-4 h-2 bg-brand-dark' : 'w-2 h-2 bg-gray-300'} rounded-full`}></div>
-              ))}
-            </div>
-          </section>
-
-          <section className="mt-8 pb-24">
-            <h3 className="text-lg font-medium text-brand-primary">Today's task</h3>
-            <div className="mt-3 bg-brand-green p-5 rounded-2xl text-white shadow-lg">
-              <div className="inline-block bg-brand-orange text-white text-xs font-semibold px-3 py-1 rounded-full mb-2">
-                Day {planDetails.dayOfPlan}
+            </section>
+          ) : (
+            <section className="mt-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+              <div className="flex justify-between items-start">
+                <div className="text-brand-dark">
+                    <h2 className="text-3xl">{activePlan.title}</h2>
+                </div>
+                <div className="text-right shrink-0 ml-4">
+                    <p className="text-sm text-brand-secondary">{currentDate}</p>
+                    <h2 className="text-4xl font-bold mt-1 leading-tight">{planDetails.book}</h2>
+                    <p className="text-4xl font-bold leading-tight">{planDetails.chapters}</p>
+                </div>
               </div>
-              <p className="text-4xl font-bold">{planDetails.book}</p>
-            </div>
-          </section>
+              <button
+                  onClick={() => onContinueReading(planDetails.book, planDetails.chapters)}
+                  className="w-full mt-4 py-3 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
+              >
+                  Continue
+              </button>
+              <div className="flex justify-between items-center mt-4 text-brand-secondary text-sm px-2">
+                <div className="flex items-center gap-2">
+                    <CalendarIcon size={20} />
+                    <span>Day {planDetails.dayOfPlan}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <RefreshIcon size={20} />
+                    <span>{planDetails.progress}% done</span>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {doYouKnowSection}
+          {todaysTaskSection}
         </>
       ) : (
          <>
@@ -259,27 +308,10 @@ const HomePage: React.FC<HomePageProps> = ({ userProfile, activePlan, onNavigate
             </div>
            </section>
            
-           <section className="mt-10">
-              <h3 className="text-2xl font-bold text-brand-dark">Do you know!</h3>
-              <div className="mt-4 bg-white p-6 rounded-2xl shadow-sm min-h-[96px] flex items-center">
-                {isLoadingFact ? (
-                  <div className="animate-pulse flex space-x-4 w-full">
-                      <div className="flex-1 space-y-3 py-1">
-                        <div className="h-2 bg-gray-200 rounded"></div>
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="h-2 bg-gray-200 rounded col-span-2"></div>
-                          <div className="h-2 bg-gray-200 rounded col-span-1"></div>
-                        </div>
-                      </div>
-                    </div>
-                ) : (
-                  <p className="text-brand-primary leading-relaxed">{bibleFact}</p>
-                )}
-              </div>
-            </section>
+           {doYouKnowSection}
             
             <section className="mt-8 pb-24">
-              <h3 className="text-lg font-medium text-brand-primary">Today's task</h3>
+              <h3 className="text-base font-medium text-brand-primary">Today&apos;s task</h3>
               <div className="mt-3 bg-white p-5 rounded-2xl text-brand-dark shadow-sm text-center">
                 <p className="font-medium">{activePlan ? "You've completed this plan!" : "No active plan."}</p>
                 <p className="text-sm text-brand-secondary mt-1">{activePlan ? "Great job!" : "Start a new plan to see your daily tasks here."}</p>

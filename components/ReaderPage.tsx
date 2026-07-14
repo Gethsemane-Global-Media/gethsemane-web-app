@@ -97,6 +97,10 @@ interface ReaderPageProps {
   onOpenReferenceSelector: () => void;
   scrollToVerse: number | null;
   onScrolledToVerse: () => void;
+  isPlanReadingMode?: boolean;
+  planChapterProgress?: number;
+  canGoPrevChapter?: boolean;
+  canGoNextChapter?: boolean;
 }
 
 
@@ -123,6 +127,10 @@ export default function ReaderPage({
   onOpenReferenceSelector,
   scrollToVerse,
   onScrolledToVerse,
+  isPlanReadingMode = false,
+  planChapterProgress = 0,
+  canGoPrevChapter = true,
+  canGoNextChapter = true,
 }: ReaderPageProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -130,7 +138,7 @@ export default function ReaderPage({
   const [bookmarks, addBookmark, removeBookmark, isBookmarked] = useBookmarks();
   const [notes, setNotes] = useState<Note[]>(() => {
     try {
-      const item = window.localStorage.getItem('gsom-notes');
+      const item = window.localStorage.getItem('behold-notes');
       return item ? JSON.parse(item) : [];
     } catch {
       return [];
@@ -163,7 +171,7 @@ export default function ReaderPage({
   const settingsDropdownRef = useRef<HTMLDivElement>(null);
   const readerContentRef = useRef<HTMLDivElement>(null);
 
-  const FONT_SIZE_KEY = 'gsom-font-size';
+  const FONT_SIZE_KEY = 'behold-font-size';
   const FONT_SIZES = ['text-base', 'text-lg', 'text-xl', 'text-2xl'];
   const [fontSizeIndex, setFontSizeIndex] = useState(() => {
       try {
@@ -234,7 +242,7 @@ export default function ReaderPage({
       updatedNotes = [...notes, newNote];
     }
     setNotes(updatedNotes);
-    window.localStorage.setItem('gsom-notes', JSON.stringify(updatedNotes));
+    window.localStorage.setItem('behold-notes', JSON.stringify(updatedNotes));
     setIsNoteModalOpen(false);
     setEditingNoteId(null);
     setNoteDraft('');
@@ -244,7 +252,7 @@ export default function ReaderPage({
     if (!editingNoteId) return;
     const updatedNotes = notes.filter(n => n.id !== editingNoteId);
     setNotes(updatedNotes);
-    window.localStorage.setItem('gsom-notes', JSON.stringify(updatedNotes));
+    window.localStorage.setItem('behold-notes', JSON.stringify(updatedNotes));
     setIsNoteModalOpen(false);
     setEditingNoteId(null);
     setNoteDraft('');
@@ -354,11 +362,35 @@ export default function ReaderPage({
             <button type="button" onClick={handleCancelSearch} className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-secondary p-1" aria-label="Close search"><CloseIcon /></button>
           </form>
         </header>
+      ) : isPlanReadingMode ? (
+        <header className="shrink-0 px-6 pt-2 pb-4">
+          <div className="flex items-center gap-2 h-14">
+            <div className="h-10 w-px bg-brand-green" />
+            <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
+          </div>
+          <div className="flex justify-between items-center text-brand-primary mt-1">
+            <span className="text-lg font-medium">{currentBook}</span>
+            <span className="text-lg font-medium">{currentChapter}</span>
+            <button
+              onClick={onOpenVersionSelector}
+              className="text-lg font-medium"
+              aria-label={`Select Bible version, current is ${currentVersion}`}
+            >
+              {currentVersion}
+            </button>
+          </div>
+          <div className="mt-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gray-400 rounded-full transition-all duration-300"
+              style={{ width: `${planChapterProgress}%` }}
+            />
+          </div>
+        </header>
       ) : (
         <header className="flex items-center justify-between p-6 h-20 shrink-0">
           <div className="flex items-center">
             <span className="h-8 w-px bg-green-700 mr-2" />
-            <span className="text-2xl font-medium tracking-wider text-brand-primary">GSOM</span>
+            <span className="text-2xl font-medium tracking-wider text-brand-primary">BEHOLD</span>
           </div>
           <button onClick={() => onSearchingChange(true)} className="p-2 text-brand-primary" aria-label="Search Bible"><SearchIcon /></button>
         </header>
@@ -393,27 +425,29 @@ export default function ReaderPage({
                 onOpenNote={handleOpenNote}
               />
             )}
-            <div className="flex justify-between items-center mb-6">
-              <button onClick={onOpenReferenceSelector} className="flex items-center gap-2 text-2xl font-medium text-brand-primary" aria-label={`Select book and chapter, current is ${currentBook} ${currentChapter}`}>
-                <span>{currentBook} {currentChapter}</span>
-                <ChevronDownIcon />
-              </button>
-              <div className="flex items-center gap-2">
-                <button onClick={onOpenVersionSelector} className="border border-brand-secondary text-brand-secondary px-4 py-1 rounded-full text-sm" aria-label={`Select Bible version, current is ${currentVersion}`}>{currentVersion}</button>
-                <div ref={settingsDropdownRef} className="relative">
-                    <button onClick={() => setIsSettingsOpen(p => !p)} className="text-brand-primary p-2" aria-label="Open reader settings" aria-haspopup="true" aria-expanded={isSettingsOpen}><SettingsIcon /></button>
-                    {isSettingsOpen && (
-                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-10 p-4">
-                            <label className="text-sm font-medium text-brand-secondary mb-2 block text-center">Font Size</label>
-                            <div className="flex items-center justify-around">
-                                <button onClick={decreaseFontSize} disabled={fontSizeIndex === 0} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 disabled:opacity-50 text-lg" aria-label="Decrease font size">A-</button>
-                                <button onClick={increaseFontSize} disabled={fontSizeIndex === FONT_SIZES.length - 1} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 disabled:opacity-50 text-lg" aria-label="Increase font size">A+</button>
-                            </div>
-                        </div>
-                    )}
+            {!isPlanReadingMode && (
+              <div className="flex justify-between items-center mb-6">
+                <button onClick={onOpenReferenceSelector} className="flex items-center gap-2 text-2xl font-medium text-brand-primary" aria-label={`Select book and chapter, current is ${currentBook} ${currentChapter}`}>
+                  <span>{currentBook} {currentChapter}</span>
+                  <ChevronDownIcon />
+                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={onOpenVersionSelector} className="border border-brand-secondary text-brand-secondary px-4 py-1 rounded-full text-sm" aria-label={`Select Bible version, current is ${currentVersion}`}>{currentVersion}</button>
+                  <div ref={settingsDropdownRef} className="relative">
+                      <button onClick={() => setIsSettingsOpen(p => !p)} className="text-brand-primary p-2" aria-label="Open reader settings" aria-haspopup="true" aria-expanded={isSettingsOpen}><SettingsIcon /></button>
+                      {isSettingsOpen && (
+                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border z-10 p-4">
+                              <label className="text-sm font-medium text-brand-secondary mb-2 block text-center">Font Size</label>
+                              <div className="flex items-center justify-around">
+                                  <button onClick={decreaseFontSize} disabled={fontSizeIndex === 0} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 disabled:opacity-50 text-lg" aria-label="Decrease font size">A-</button>
+                                  <button onClick={increaseFontSize} disabled={fontSizeIndex === FONT_SIZES.length - 1} className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 disabled:opacity-50 text-lg" aria-label="Increase font size">A+</button>
+                              </div>
+                          </div>
+                      )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
             
             {isLoadingChapter ? (
                 <div className="text-center py-10 text-brand-secondary">
@@ -428,17 +462,29 @@ export default function ReaderPage({
                     <p className="mt-4">Loading chapter...</p>
                 </div>
             ) : (
-                <div className={`text-brand-primary leading-loose space-y-2 ${fontSizeClass}`}>
+                <div className={`text-brand-primary leading-loose space-y-3 ${fontSizeClass}`}>
                 {parsedVerses && Array.isArray(parsedVerses) && parsedVerses.length > 0 ? (
                     parsedVerses.map((verse) => {
                         if (!verse || !verse.number || !verse.text) return null;
                         try {
                             const hasNote = getNoteForVerse(currentBook, currentChapter, parseInt(verse.number, 10));
+                            const verseLabel = isPlanReadingMode
+                              ? `{${currentChapter}:${verse.number}}`
+                              : null;
                             return (
-                                <div key={verse.number} id={`verse-${verse.number}`} onClick={(e) => handleVerseClick(verse, e)} className="p-1 rounded-md cursor-pointer hover:bg-brand-nav-active-bg flex items-center">
-                                    <sup className="font-bold text-sm pr-2 text-brand-secondary">{verse.number}</sup>
-                                    <span>{verse.text}</span>
-                                    {hasNote && <span className="ml-2 text-brand-accent" role="img" aria-label="Note">✏️</span>}
+                                <div key={verse.number} id={`verse-${verse.number}`} onClick={(e) => handleVerseClick(verse, e)} className="p-1 rounded-md cursor-pointer hover:bg-brand-nav-active-bg">
+                                    {isPlanReadingMode ? (
+                                      <span>
+                                        <span className="text-brand-secondary">{verseLabel} </span>
+                                        {verse.text}
+                                      </span>
+                                    ) : (
+                                      <div className="flex items-center">
+                                        <sup className="font-bold text-sm pr-2 text-brand-secondary">{verse.number}</sup>
+                                        <span>{verse.text}</span>
+                                        {hasNote && <span className="ml-2 text-brand-accent" role="img" aria-label="Note">✏️</span>}
+                                      </div>
+                                    )}
                                 </div>
                             );
                         } catch (error) {
@@ -453,12 +499,44 @@ export default function ReaderPage({
         )}
       </main>
 
-      {!isSearching && (
+      {!isSearching && isPlanReadingMode && (
+        <div className="fixed bottom-24 left-0 right-0 max-w-md mx-auto z-20 pointer-events-none">
+          <div className="flex justify-center items-center gap-6 px-6 pointer-events-auto">
+            <button
+              onClick={handlePrevChapter}
+              disabled={!canGoPrevChapter}
+              aria-disabled={!canGoPrevChapter}
+              className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center text-brand-primary disabled:opacity-40"
+              aria-label="Previous Chapter"
+            >
+              <ChevronLeftIcon />
+            </button>
+            <button
+              onClick={handleToggleAudio}
+              className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center text-brand-dark"
+              aria-label={isPlaying ? 'Stop audio scripture' : 'Play audio scripture'}
+            >
+              {isPlaying ? <PauseIcon /> : <PlayIcon />}
+            </button>
+            <button
+              onClick={handleNextChapter}
+              disabled={!canGoNextChapter}
+              aria-disabled={!canGoNextChapter}
+              className="w-12 h-12 rounded-full bg-white/80 backdrop-blur-sm shadow-md flex items-center justify-center text-brand-primary disabled:opacity-40"
+              aria-label="Next Chapter"
+            >
+              <ChevronRightIcon />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!isSearching && !isPlanReadingMode && (
         <div className="fixed bottom-20 left-0 right-0 max-w-md mx-auto bg-brand-bg/95 backdrop-blur-sm z-20">
           <div className="flex justify-between items-center p-4 border-t border-gray-200">
-            <button onClick={handlePrevChapter} disabled={currentChapter <= 1} aria-disabled={currentChapter <= 1} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Previous Chapter"><ChevronLeftIcon /><span className="font-medium">Previous</span></button>
+            <button onClick={handlePrevChapter} disabled={!canGoPrevChapter} aria-disabled={!canGoPrevChapter} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Previous Chapter"><ChevronLeftIcon /><span className="font-medium">Previous</span></button>
             <button onClick={handleToggleAudio} className="text-brand-dark p-3 bg-white rounded-full shadow-md" aria-label={isPlaying ? "Stop audio scripture" : "Play audio scripture"}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</button>
-            <button onClick={handleNextChapter} disabled={currentChapter >= totalChapters} aria-disabled={currentChapter >= totalChapters} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Next Chapter"><span className="font-medium">Next</span><ChevronRightIcon /></button>
+            <button onClick={handleNextChapter} disabled={!canGoNextChapter} aria-disabled={!canGoNextChapter} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Next Chapter"><span className="font-medium">Next</span><ChevronRightIcon /></button>
           </div>
         </div>
       )}

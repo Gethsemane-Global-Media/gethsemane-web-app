@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Bookmark } from '../types';
 
-const BOOKMARKS_KEY = 'gsom-bookmarks';
+const BOOKMARKS_KEY = 'behold-bookmarks';
 
 export const useBookmarks = (): [
   Bookmark[],

@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { GoogleIcon } from './icons/GoogleIcon';
+import { useUserProfile } from '../hooks/useUserProfile';
 
 interface EmailSignUpFormProps {
   onNavigateToSignIn: () => void;
@@ -8,13 +9,14 @@ interface EmailSignUpFormProps {
 }
 
 const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, onNavigateToSuccess }) => {
+  const [profile, updateProfile] = useUserProfile();
   const [email, setEmail] = useState('johndoe@gmail.com');
   const [fullName, setFullName] = useState('John Doe');
   const [password, setPassword] = useState('');
 
   const handleSignUp = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    // In a real app, you would handle form validation and API calls here.
+    updateProfile({ ...profile, name: fullName.trim() || profile.name });
     onNavigateToSuccess();
   };
   

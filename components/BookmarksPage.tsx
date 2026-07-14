@@ -23,7 +23,7 @@ const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigateBack, onNavigat
             </button>
             <div className="flex items-center ml-2">
                 <span className="h-8 w-px bg-green-700 mr-2"></span>
-                <span className="text-2xl font-medium tracking-wider text-brand-primary">GSOM</span>
+                <span className="text-2xl font-medium tracking-wider text-brand-primary">BEHOLD</span>
             </div>
         </header>
         <main className="flex-grow px-6 pb-24 overflow-y-auto">

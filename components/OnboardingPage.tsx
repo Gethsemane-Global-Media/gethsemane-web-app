@@ -100,7 +100,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onOnboardingComplete })
         <header className="flex items-center h-20 shrink-0 px-6">
           <div className="flex items-center">
             <span className="h-8 w-px bg-brand-dark mr-2"></span>
-            <span className="text-2xl font-medium tracking-wider text-brand-dark">GSOM</span>
+            <span className="text-2xl font-medium tracking-wider text-brand-dark">BEHOLD</span>
           </div>
         </header>
 
