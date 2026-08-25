@@ -7,9 +7,16 @@ import React, {
 } from 'react';
 
 export interface UserProfile {
+  userId?: number;
   name: string;
+  email?: string;
   role: string;
   avatarUrl?: string;
+  student?: {
+    id: number;
+    matric_number: string;
+    waves?: any[];
+  } | null;
 }
 
 const USER_PROFILE_KEY = 'userProfile';
@@ -18,9 +25,12 @@ const DEFAULT_AVATAR =
   'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
 
 export const defaultProfile: UserProfile = {
+  userId: undefined,
   name: 'Precious Ocg',
-  role: 'Student',
+  email: 'precious@gkni.org',
+  role: 'Community Member',
   avatarUrl: DEFAULT_AVATAR,
+  student: null,
 };
 
 interface UserProfileContextValue {

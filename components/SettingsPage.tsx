@@ -4,6 +4,7 @@ import { PlayCircleIcon } from './icons/PlayCircleIcon';
 import { NotificationIcon } from './icons/NotificationIcon';
 import { ShareIcon } from './icons/ShareIcon';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useAuth } from '../context/AuthContext';
 import ShareModal from './ShareModal';
 
 interface SettingsPageProps {
@@ -20,6 +21,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onNavigateToCreatePlan,
 }) => {
   const [profile] = useUserProfile();
+  const { logout } = useAuth();
   const [showShareModal, setShowShareModal] = useState(false);
 
   const settingsItems = [
@@ -95,6 +97,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
               <span>{item.label}</span>
             </button>
           ))}
+
+          <button
+            onClick={logout}
+            className="flex items-center w-full text-left gap-4 text-red-600 text-lg hover:opacity-80 transition-opacity"
+          >
+            <span className="shrink-0">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </span>
+            <span>Sign out</span>
+          </button>
         </section>
 
         <section className="mt-auto pb-24 pt-10 text-center">

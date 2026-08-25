@@ -4,6 +4,16 @@ import { Plan } from '../types';
 import { BIBLE_CHAPTERS } from '../data/bibleBooks';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { RefreshIcon } from './icons/RefreshIcon';
+import { formatDisplayDate } from '../utils/dateUtils';
+
+interface AnnouncementItem {
+  id: number;
+  title: string;
+  content: string;
+  badge_text?: string;
+  action_url?: string;
+  published_at: string;
+}
 
 interface HomePageProps {
   userProfile: UserProfile;
@@ -59,6 +69,25 @@ const HomePage: React.FC<HomePageProps> = ({
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+
+  const API_BASE_URL = import.meta.env.VITE_ROOTED_API_URL || 'http://localhost:8000/api/v1';
+
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/community/announcements`);
+        if (res.ok) {
+          const data = await res.json();
+          setAnnouncements(data);
+        }
+      } catch (err) {
+        console.warn('Failed to load community bulletins:', err);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
 
   const currentDate = useMemo(() => new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -223,6 +252,46 @@ const HomePage: React.FC<HomePageProps> = ({
     </section>
   );
 
+  const announcementsSection = announcements.length > 0 ? (
+    <section className="mt-6 mb-2">
+      <div className="rounded-3xl bg-gradient-to-r from-neutral-900 via-indigo-950 to-neutral-900 border border-indigo-500/30 p-5 text-white shadow-xl">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 uppercase tracking-wider">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+            {announcements[0].badge_text || 'Ministry Bulletin'}
+          </span>
+          <span className="text-[11px] text-neutral-400">
+            {formatDisplayDate(announcements[0].published_at)}
+          </span>
+        </div>
+
+        <h4 className="text-base font-bold text-white mt-1">
+          {announcements[0].title}
+        </h4>
+
+        <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
+          {announcements[0].content}
+        </p>
+
+        {announcements[0].action_url && (
+          <a
+            href={announcements[0].action_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all cursor-pointer"
+          >
+            Learn More
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
+        )}
+      </div>
+    </section>
+  ) : null;
+
   const todaysTaskSection = planDetails ? (
     <section className="mt-8 pb-24">
       <h3 className="text-base font-medium text-brand-primary">Today&apos;s task</h3>
@@ -279,7 +348,7 @@ const HomePage: React.FC<HomePageProps> = ({
               </div>
               <button
                   onClick={() => onContinueReading(planDetails.book, planDetails.chapters)}
-                  className="w-full mt-4 py-3 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
+                  className="w-full mt-4 py-3 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors cursor-pointer shadow-md"
               >
                   Continue
               </button>
@@ -296,6 +365,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </section>
           )}
 
+          {announcementsSection}
           {doYouKnowSection}
           {todaysTaskSection}
         </>
@@ -308,6 +378,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
            </section>
            
+           {announcementsSection}
            {doYouKnowSection}
             
             <section className="mt-8 pb-24">
@@ -315,7 +386,7 @@ const HomePage: React.FC<HomePageProps> = ({
               <div className="mt-3 bg-white p-5 rounded-2xl text-brand-dark shadow-sm text-center">
                 <p className="font-medium">{activePlan ? "You've completed this plan!" : "No active plan."}</p>
                 <p className="text-sm text-brand-secondary mt-1">{activePlan ? "Great job!" : "Start a new plan to see your daily tasks here."}</p>
-                <button onClick={onNavigateToPlan} className="mt-4 px-6 py-2 bg-brand-dark text-white rounded-full font-semibold text-sm hover:bg-opacity-90 transition-colors">
+                <button onClick={onNavigateToPlan} className="mt-4 px-6 py-2 bg-brand-dark text-white rounded-full font-semibold text-sm hover:bg-opacity-90 transition-colors cursor-pointer">
                     {activePlan ? "Choose a New Plan" : "Explore Plans"}
                 </button>
               </div>

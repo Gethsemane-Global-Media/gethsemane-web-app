@@ -19,6 +19,9 @@ import { useUserProfile, getFirstName } from '../hooks/useUserProfile';
 import BookmarksPage from './BookmarksPage';
 import ReminderBanner from './ReminderBanner';
 import { getStoredNotificationSettings } from '../hooks/useNotificationSettings';
+import { SermonLibraryPage } from './SermonLibraryPage';
+import { MessageTrackerPage } from './MessageTrackerPage';
+import { MessageIcon } from './icons/MessageIcon';
 import {
   useDailyReminder,
   isTodayScheduled,
@@ -27,7 +30,7 @@ import {
   markReminderFiredToday,
 } from '../hooks/useDailyReminder';
 
-type AppView = 'home' | 'bible' | 'plan' | 'settings' | 'editProfile' | 'notificationSettings' | 'createPlan' | 'planDetail' | 'calendar' | 'readingCompleted' | 'bookmarks';
+type AppView = 'home' | 'bible' | 'sermons' | 'messageTracker' | 'plan' | 'settings' | 'editProfile' | 'notificationSettings' | 'createPlan' | 'planDetail' | 'calendar' | 'readingCompleted' | 'bookmarks';
 
 interface BibleNavTarget {
     book: string;
@@ -428,6 +431,10 @@ const MainApp: React.FC = () => {
                   onNavigateBack={() => handleNavigation('settings')}
                   onNavigateToVerse={handleNavigateToVerse}
                />;
+      case 'sermons':
+        return <SermonLibraryPage onNavigateToTracker={() => handleNavigation('messageTracker')} />;
+      case 'messageTracker':
+        return <MessageTrackerPage onNavigateBack={() => handleNavigation('sermons')} />;
       default:
         return <HomePage 
                   userProfile={profile} 
@@ -439,10 +446,11 @@ const MainApp: React.FC = () => {
     }
   };
   
-  const NavButton: React.FC<{ tab: 'home' | 'bible' | 'plan' | 'settings'; label: string; icon: React.ReactNode }> = ({ tab, label, icon }) => {
+  const NavButton: React.FC<{ tab: 'home' | 'bible' | 'sermons' | 'plan' | 'settings'; label: string; icon: React.ReactNode }> = ({ tab, label, icon }) => {
     const isSettingsSubView = ['editProfile', 'notificationSettings', 'bookmarks'].includes(currentView);
     const isPlanSubView = ['planDetail', 'createPlan', 'calendar', 'readingCompleted'].includes(currentView);
-    const isActive = currentView === tab || (tab === 'settings' && isSettingsSubView) || (tab === 'plan' && isPlanSubView);
+    const isSermonSubView = ['messageTracker'].includes(currentView);
+    const isActive = currentView === tab || (tab === 'settings' && isSettingsSubView) || (tab === 'plan' && isPlanSubView) || (tab === 'sermons' && isSermonSubView);
     
     const activeClasses = 'text-brand-accent bg-brand-nav-active-bg font-semibold';
     const inactiveClasses = 'text-brand-inactive';
@@ -450,10 +458,10 @@ const MainApp: React.FC = () => {
     return (
         <button 
             onClick={() => handleNavigation(tab)}
-            className={`flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 transition-colors duration-200 ${isActive ? activeClasses : inactiveClasses}`}
+            className={`flex items-center justify-center gap-1.5 rounded-2xl px-2.5 py-2 transition-colors duration-200 ${isActive ? activeClasses : inactiveClasses}`}
         >
             {icon}
-            <span className="text-sm">{label}</span>
+            <span className="text-xs">{label}</span>
         </button>
     );
   };
@@ -466,6 +474,8 @@ const MainApp: React.FC = () => {
     'planDetail',
     'settings',
     'bible',
+    'sermons',
+    'messageTracker',
     'readingCompleted',
     'bookmarks'
   ].includes(currentView);
@@ -508,11 +518,12 @@ const MainApp: React.FC = () => {
       {renderContent()}
 
       <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-brand-bg/95 backdrop-blur-sm border-t border-gray-200/80 z-30">
-          <div className="flex justify-around items-center h-20">
-              <NavButton tab="home" label="Home" icon={<HomeIcon size={22} />} />
-              <NavButton tab="bible" label="Bible" icon={<BibleIcon size={22} />} />
-              <NavButton tab="plan" label="Plan" icon={<PlanIcon size={22} />} />
-              <NavButton tab="settings" label="Settings" icon={<SettingsIcon size={22} />} />
+          <div className="flex justify-around items-center h-20 px-2">
+              <NavButton tab="home" label="Home" icon={<HomeIcon size={20} />} />
+              <NavButton tab="bible" label="Bible" icon={<BibleIcon size={20} />} />
+              <NavButton tab="sermons" label="Sermons" icon={<MessageIcon className="w-5 h-5" />} />
+              <NavButton tab="plan" label="Plan" icon={<PlanIcon size={20} />} />
+              <NavButton tab="settings" label="Settings" icon={<SettingsIcon size={20} />} />
           </div>
         </footer>
     </div>
