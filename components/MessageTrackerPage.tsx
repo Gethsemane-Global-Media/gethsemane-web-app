@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { getApiBaseUrl } from '../utils/apiConfig';
 import { Sermon, SermonPlayerModal } from './SermonPlayerModal';
 
 interface SermonProgressItem {
@@ -19,7 +20,7 @@ export const MessageTrackerPage: React.FC<{ onNavigateBack?: () => void }> = ({ 
   const [loading, setLoading] = useState(true);
   const [activeSermon, setActiveSermon] = useState<Sermon | null>(null);
 
-  const API_BASE_URL = import.meta.env.VITE_ROOTED_API_URL || 'http://localhost:8000/api/v1';
+  const API_BASE_URL = getApiBaseUrl();
 
   useEffect(() => {
     const fetchUserProgress = async () => {

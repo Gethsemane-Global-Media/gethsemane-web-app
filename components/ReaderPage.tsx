@@ -479,10 +479,12 @@ export default function ReaderPage({
                                         {verse.text}
                                       </span>
                                     ) : (
-                                      <div className="flex items-center">
-                                        <sup className="font-bold text-sm pr-2 text-brand-secondary">{verse.number}</sup>
-                                        <span>{verse.text}</span>
-                                        {hasNote && <span className="ml-2 text-brand-accent" role="img" aria-label="Note">✏️</span>}
+                                      <div className="flex items-start gap-2">
+                                        <span className="font-bold text-xs pt-1 text-brand-secondary shrink-0 select-none">
+                                          {verse.number}
+                                        </span>
+                                        <span className="flex-1 leading-relaxed">{verse.text}</span>
+                                        {hasNote && <span className="ml-2 text-brand-accent shrink-0 pt-1" role="img" aria-label="Note">✏️</span>}
                                       </div>
                                     )}
                                 </div>

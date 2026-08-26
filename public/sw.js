@@ -1,91 +1,66 @@
-const APP_SHELL_CACHE = 'behold-app-shell-v1';
-const BIBLE_DATA_CACHE = 'behold-bible-data-v1';
-
-// Built asset filenames are hashed, so only precache the entry points.
-// Everything else is cached at runtime by the fetch handler below.
-const appShellUrls = [
+const CACHE_NAME = 'behold-pwa-v1';
+const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/manifest.json',
+  '/icon-192.svg',
+  '/icon-512.svg',
 ];
 
-self.addEventListener('install', event => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(APP_SHELL_CACHE).then(cache => {
-      return cache.addAll(appShellUrls);
-    }).catch(err => {
-      console.error('Failed to cache assets during install:', err);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(STATIC_ASSETS);
     })
   );
+  self.skipWaiting();
 });
 
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [APP_SHELL_CACHE, BIBLE_DATA_CACHE];
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
       );
     })
   );
+  self.clients.claim();
 });
 
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') {
-    return;
-  }
+self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
 
-  const url = event.request.url;
-  if (url.startsWith('https://cdn.jsdelivr.net/gh/wldeh/bible-api/') || url.startsWith('https://bolls.life/')) {
+  const url = new URL(event.request.url);
+
+  // Network-first for API requests
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(event.request)
-        .then(response => {
-          return caches.open(BIBLE_DATA_CACHE).then(cache => {
-            cache.put(event.request, response.clone());
-            return response;
-          });
-        })
-        .catch(() => {
-          return caches.match(event.request);
-        })
+      fetch(event.request).catch(() => caches.match(event.request))
     );
     return;
   }
 
+  // Stale-while-revalidate for app assets
   event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        return fetch(event.request).then(
-          networkResponse => {
-            if (!networkResponse || networkResponse.status !== 200) {
-              return networkResponse;
-            }
-
-            // Only cache basic, same-origin requests.
-            if (networkResponse.type !== 'basic') {
-              return networkResponse;
-            }
-
-            const responseToCache = networkResponse.clone();
-
-            caches.open(APP_SHELL_CACHE)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return networkResponse;
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
           }
-        ).catch(error => {
-          console.error('Fetching failed:', error);
-          throw error;
-        });
-      })
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
+    })
   );
 });

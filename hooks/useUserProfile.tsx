@@ -89,4 +89,7 @@ export const useUserProfile = (): [UserProfile, (profile: UserProfile) => void] 
   return [context.profile, context.updateProfile];
 };
 
-export const getFirstName = (fullName: string) => fullName.trim().split(/\s+/)[0] || fullName;
+export const getFirstName = (fullName?: string | null): string => {
+  if (!fullName || typeof fullName !== 'string') return 'Disciple';
+  return fullName.trim().split(/\s+/)[0] || 'Disciple';
+};

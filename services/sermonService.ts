@@ -1,5 +1,7 @@
-// API Base configuration for Rooted SMS Backend
-const API_BASE_URL = import.meta.env.VITE_ROOTED_API_URL || 'http://localhost:8000/api/v1';
+import { getApiBaseUrl } from '../utils/apiConfig';
+
+// Dynamic API Base configuration for Rooted Backend
+const API_BASE_URL = getApiBaseUrl();
 
 export interface Sermon {
   id: number;
@@ -44,6 +46,7 @@ export const fetchSermons = async (params: {
   speaker?: string;
   service_type?: string;
   page?: number;
+  per_page?: number;
 }): Promise<{ data: Sermon[]; current_page: number; last_page: number; total: number }> => {
   try {
     const query = new URLSearchParams();
@@ -52,6 +55,7 @@ export const fetchSermons = async (params: {
     if (params.speaker) query.append('speaker', params.speaker);
     if (params.service_type) query.append('service_type', params.service_type);
     if (params.page) query.append('page', String(params.page));
+    query.append('per_page', String(params.per_page || 500));
 
     const response = await fetch(`${API_BASE_URL}/sermons?${query.toString()}`);
     if (!response.ok) {
@@ -126,6 +130,29 @@ export const fetchSermonSeries = async (): Promise<SermonSeries[]> => {
   }
 };
 
+export const getSermons = fetchSermons;
+export const getSermonSeries = fetchSermonSeries;
+
+export const recordSermonProgress = async (
+  sermonId: number,
+  data: {
+    media_type?: string;
+    current_time_seconds?: number;
+    duration_seconds?: number;
+    completed?: boolean;
+  }
+): Promise<void> => {
+  try {
+    await fetch(`${API_BASE_URL}/sermons/${sermonId}/progress`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch (err) {
+    // Non-blocking telemetry sync
+  }
+};
+
 export const syncSermonProgress = async (
   userId: number,
   sermonId: number,
@@ -148,3 +175,4 @@ export const syncSermonProgress = async (
     console.error('Failed to sync sermon progress with Rooted API:', err);
   }
 };
+

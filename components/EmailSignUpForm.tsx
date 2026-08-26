@@ -92,27 +92,33 @@ const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, o
             </div>
           </div>
 
-          <div className="text-center my-8 text-brand-secondary text-sm">or</div>
+          <div className="mt-6 space-y-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 bg-brand-dark text-white rounded-full font-semibold text-base hover:bg-opacity-90 transition-colors disabled:opacity-50 shadow-md"
+            >
+              {loading ? 'Creating Account...' : 'Sign up'}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setIsGoogleModalOpen(true)}
-            className="w-full flex items-center justify-center gap-3 py-4 bg-white rounded-2xl border border-gray-200 text-brand-primary font-medium hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            <GoogleIcon />
-            Sign up with Google
-          </button>
+            <div className="relative flex items-center justify-center my-3">
+              <div className="border-t border-gray-200 w-full" />
+              <span className="bg-brand-bg px-3 text-xs text-brand-secondary uppercase tracking-wider absolute">or</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsGoogleModalOpen(true)}
+              className="w-full flex items-center justify-center gap-3 py-3.5 bg-white rounded-full border border-gray-200 text-brand-primary font-medium hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              <GoogleIcon />
+              Sign up with Google
+            </button>
+          </div>
         </div>
 
-        <div className="mt-8">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-5 bg-brand-dark text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors disabled:opacity-50 shadow-md"
-          >
-            {loading ? 'Creating Account...' : 'Sign up'}
-          </button>
-          <p className="text-center mt-6 text-brand-secondary">
+        <div className="pb-4 pt-6">
+          <p className="text-center text-brand-secondary">
             Have an account?{' '}
             <button type="button" onClick={onNavigateToSignIn} className="font-semibold text-brand-accent hover:underline">
               Sign in

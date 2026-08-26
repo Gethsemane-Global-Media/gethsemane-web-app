@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sermon } from '../services/sermonService';
+import { getYouTubeEmbedUrl, getYouTubeVideoId } from '../utils/mediaUtils';
 
 interface Props {
   sermon: Sermon;
@@ -7,16 +8,9 @@ interface Props {
 }
 
 export const SermonPlayerModal: React.FC<Props> = ({ sermon, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'audio' | 'video'>(sermon.has_video && sermon.youtube_video_url ? 'video' : 'audio');
-
-  // Extract YouTube embed ID
-  const getYouTubeEmbedUrl = (url?: string) => {
-    if (!url) return null;
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
-    return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1` : url;
-  };
-
+  const hasPlayableVideo = Boolean(sermon.youtube_video_url && getYouTubeVideoId(sermon.youtube_video_url));
   const embedUrl = getYouTubeEmbedUrl(sermon.youtube_video_url);
+  const [activeTab, setActiveTab] = useState<'audio' | 'video'>(hasPlayableVideo ? 'video' : 'audio');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
@@ -44,6 +38,18 @@ export const SermonPlayerModal: React.FC<Props> = ({ sermon, onClose }) => {
 
         {/* Media Selector Tabs */}
         <div className="flex gap-2 my-3.5">
+          {hasPlayableVideo && (
+            <button
+              onClick={() => setActiveTab('video')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                activeTab === 'video'
+                  ? 'bg-rose-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-brand-secondary hover:text-brand-dark hover:bg-gray-200'
+              }`}
+            >
+              YouTube Video
+            </button>
+          )}
           {sermon.has_audio && (
             <button
               onClick={() => setActiveTab('audio')}
@@ -56,30 +62,20 @@ export const SermonPlayerModal: React.FC<Props> = ({ sermon, onClose }) => {
               Audio Stream
             </button>
           )}
-          {sermon.has_video && sermon.youtube_video_url && (
-            <button
-              onClick={() => setActiveTab('video')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'video'
-                  ? 'bg-rose-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-brand-secondary hover:text-brand-dark hover:bg-gray-200'
-              }`}
-            >
-              YouTube Video
-            </button>
-          )}
         </div>
 
         {/* Media Player Area */}
         <div className="my-3.5 rounded-2xl bg-brand-bg border border-gray-200 overflow-hidden min-h-[200px] flex items-center justify-center p-4">
           {activeTab === 'video' && embedUrl ? (
-            <iframe
-              src={embedUrl}
-              title={sermon.title}
-              className="w-full h-64 rounded-xl shadow-sm"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+            <div className="w-full">
+              <iframe
+                src={embedUrl}
+                title={sermon.title}
+                className="w-full h-64 rounded-xl shadow-sm border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
           ) : (
             <div className="w-full text-center space-y-3.5 py-4">
               <div className="w-14 h-14 mx-auto rounded-full bg-brand-green/10 border border-brand-green/20 flex items-center justify-center text-brand-green shadow-sm">

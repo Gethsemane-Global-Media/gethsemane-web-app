@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_ROOTED_API_URL || 'http://localhost:8000/api/v1';
+import { getApiBaseUrl } from '../utils/apiConfig';
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface StudentProfile {
   id: number;

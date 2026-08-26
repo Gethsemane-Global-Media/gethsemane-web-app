@@ -5,6 +5,7 @@ import { BIBLE_CHAPTERS } from '../data/bibleBooks';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { RefreshIcon } from './icons/RefreshIcon';
 import { formatDisplayDate } from '../utils/dateUtils';
+import { getApiBaseUrl } from '../utils/apiConfig';
 
 interface AnnouncementItem {
   id: number;
@@ -21,6 +22,9 @@ interface HomePageProps {
   isDailyTaskCompleted: boolean;
   onNavigateToPlan: () => void;
   onContinueReading: (book: string, chapters: string) => void;
+  onNavigateToAnnouncements?: () => void;
+  onNavigateToDiscipleship?: () => void;
+  onNavigateToGiving?: () => void;
 }
 
 const generateReadingSchedule = (plan: Plan): string[] => {
@@ -62,6 +66,9 @@ const HomePage: React.FC<HomePageProps> = ({
   isDailyTaskCompleted,
   onNavigateToPlan,
   onContinueReading,
+  onNavigateToAnnouncements,
+  onNavigateToDiscipleship,
+  onNavigateToGiving,
 }) => {
   const [bibleFact, setBibleFact] = useState<string>('');
   const [isLoadingFact, setIsLoadingFact] = useState(true);
@@ -71,7 +78,7 @@ const HomePage: React.FC<HomePageProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
 
-  const API_BASE_URL = import.meta.env.VITE_ROOTED_API_URL || 'http://localhost:8000/api/v1';
+  const API_BASE_URL = getApiBaseUrl();
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -203,7 +210,7 @@ const HomePage: React.FC<HomePageProps> = ({
     };
   }, [activePlan]);
   
-  const firstName = getFirstName(userProfile.name);
+  const firstName = getFirstName(userProfile?.name);
 
   const doYouKnowSection = (
     <section className="mt-10">
@@ -252,6 +259,51 @@ const HomePage: React.FC<HomePageProps> = ({
     </section>
   );
 
+  const ministryHubSection = (
+    <section className="mt-6 mb-2 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-brand-dark">Ministry Hub & Discipleship</h3>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {onNavigateToDiscipleship && (
+          <button
+            onClick={onNavigateToDiscipleship}
+            className="flex flex-col justify-between p-4 rounded-3xl bg-white border border-gray-200 shadow-xs hover:shadow-md hover:border-brand-green/30 text-left transition-all cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-xl bg-brand-green/10 text-brand-green flex items-center justify-center mb-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-brand-dark">Discipleship</h4>
+              <p className="text-[10px] text-brand-secondary mt-0.5">GFC, GWD, GSOM & ESG</p>
+            </div>
+          </button>
+        )}
+
+        {onNavigateToGiving && (
+          <button
+            onClick={onNavigateToGiving}
+            className="flex flex-col justify-between p-4 rounded-3xl bg-white border border-gray-200 shadow-xs hover:shadow-md hover:border-brand-green/30 text-left transition-all cursor-pointer"
+          >
+            <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-brand-dark">Giving</h4>
+              <p className="text-[10px] text-brand-secondary mt-0.5">Tithes, Seeds & Partners</p>
+            </div>
+          </button>
+        )}
+      </div>
+    </section>
+  );
+
   const announcementsSection = announcements.length > 0 ? (
     <section className="mt-6 mb-2">
       <div className="rounded-3xl bg-gradient-to-r from-neutral-900 via-indigo-950 to-neutral-900 border border-indigo-500/30 p-5 text-white shadow-xl">
@@ -275,19 +327,32 @@ const HomePage: React.FC<HomePageProps> = ({
           {announcements[0].content}
         </p>
 
-        {announcements[0].action_url && (
-          <a
-            href={announcements[0].action_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all cursor-pointer"
-          >
-            Learn More
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </a>
-        )}
+        <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+          {announcements[0].action_url ? (
+            <a
+              href={announcements[0].action_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all cursor-pointer"
+            >
+              Learn More
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          ) : (
+            <span />
+          )}
+
+          {onNavigateToAnnouncements && (
+            <button
+              onClick={onNavigateToAnnouncements}
+              className="text-[11px] text-indigo-300 hover:text-white font-bold cursor-pointer"
+            >
+              View Bulletin History →
+            </button>
+          )}
+        </div>
       </div>
     </section>
   ) : null;
@@ -366,6 +431,7 @@ const HomePage: React.FC<HomePageProps> = ({
           )}
 
           {announcementsSection}
+          {ministryHubSection}
           {doYouKnowSection}
           {todaysTaskSection}
         </>
@@ -379,6 +445,7 @@ const HomePage: React.FC<HomePageProps> = ({
            </section>
            
            {announcementsSection}
+           {ministryHubSection}
            {doYouKnowSection}
             
             <section className="mt-8 pb-24">

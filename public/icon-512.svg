@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#2D2D2D"/>
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="#212631" stroke="#49684F" stroke-width="8"/>
+  <path d="M120 160h272v192H120z" fill="none"/>
+  <path d="M140 140c0-22 18-40 40-40h152c22 0 40 18 40 40v232H140V140z" fill="#49684F" opacity="0.15"/>
+  <line x1="256" y1="120" x2="256" y2="392" stroke="#49684F" stroke-width="18" stroke-linecap="round"/>
+  <line x1="180" y1="200" x2="332" y2="200" stroke="#49684F" stroke-width="18" stroke-linecap="round"/>
+  <circle cx="256" cy="200" r="16" fill="#D48D3D"/>
+  <text x="256" y="445" text-anchor="middle" fill="#FFFFFF" font-family="Inter, sans-serif" font-size="44" font-weight="900" letter-spacing="6">BEHOLD</text>
+</svg>

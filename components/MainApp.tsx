@@ -16,11 +16,17 @@ import { BIBLE_CHAPTERS } from '../data/bibleBooks';
 import BiblePage from './BiblePage';
 import ReadingCompletedPage from './ReadingCompletedPage';
 import { useUserProfile, getFirstName } from '../hooks/useUserProfile';
+import { useAuth } from '../context/AuthContext';
 import BookmarksPage from './BookmarksPage';
 import ReminderBanner from './ReminderBanner';
 import { getStoredNotificationSettings } from '../hooks/useNotificationSettings';
 import { SermonLibraryPage } from './SermonLibraryPage';
+import { SermonDetailPage } from './SermonDetailPage';
 import { MessageTrackerPage } from './MessageTrackerPage';
+import { AnnouncementsPage } from './AnnouncementsPage';
+import { DiscipleshipPage } from './DiscipleshipPage';
+import { GivingPage } from './GivingPage';
+import { Sermon } from '../services/sermonService';
 import { MessageIcon } from './icons/MessageIcon';
 import {
   useDailyReminder,
@@ -30,7 +36,24 @@ import {
   markReminderFiredToday,
 } from '../hooks/useDailyReminder';
 
-type AppView = 'home' | 'bible' | 'sermons' | 'messageTracker' | 'plan' | 'settings' | 'editProfile' | 'notificationSettings' | 'createPlan' | 'planDetail' | 'calendar' | 'readingCompleted' | 'bookmarks';
+type AppView =
+  | 'home'
+  | 'bible'
+  | 'sermons'
+  | 'sermonDetail'
+  | 'messageTracker'
+  | 'announcements'
+  | 'discipleship'
+  | 'giving'
+  | 'plan'
+  | 'settings'
+  | 'editProfile'
+  | 'notificationSettings'
+  | 'createPlan'
+  | 'planDetail'
+  | 'calendar'
+  | 'readingCompleted'
+  | 'bookmarks';
 
 interface BibleNavTarget {
     book: string;
@@ -362,15 +385,20 @@ const MainApp: React.FC = () => {
   };
 
 
+  const [selectedSermon, setSelectedSermon] = useState<Sermon | null>(null);
+
   const renderContent = () => {
     switch (currentView) {
       case 'home':
         return <HomePage 
-                  userProfile={profile} 
+                  userProfile={{ ...profile, name: activeUserName }} 
                   activePlan={activePlan}
                   isDailyTaskCompleted={isDailyTaskCompleted}
                   onNavigateToPlan={() => handleNavigation('plan', true)}
                   onContinueReading={handleContinueReading}
+                  onNavigateToAnnouncements={() => handleNavigation('announcements')}
+                  onNavigateToDiscipleship={() => handleNavigation('discipleship')}
+                  onNavigateToGiving={() => handleNavigation('giving')}
                 />;
       case 'bible':
         return <BiblePage 
@@ -432,9 +460,26 @@ const MainApp: React.FC = () => {
                   onNavigateToVerse={handleNavigateToVerse}
                />;
       case 'sermons':
-        return <SermonLibraryPage onNavigateToTracker={() => handleNavigation('messageTracker')} />;
+        return <SermonLibraryPage 
+                  onNavigateToTracker={() => handleNavigation('messageTracker')} 
+                  onSelectSermon={(sermon) => {
+                    setSelectedSermon(sermon);
+                    handleNavigation('sermonDetail');
+                  }}
+               />;
+      case 'sermonDetail':
+        return selectedSermon && <SermonDetailPage 
+                                    sermon={selectedSermon} 
+                                    onNavigateBack={() => handleNavigation('sermons')} 
+                                  />;
       case 'messageTracker':
         return <MessageTrackerPage onNavigateBack={() => handleNavigation('sermons')} />;
+      case 'announcements':
+        return <AnnouncementsPage onNavigateBack={() => handleNavigation('home')} />;
+      case 'discipleship':
+        return <DiscipleshipPage onNavigateBack={() => handleNavigation('home')} />;
+      case 'giving':
+        return <GivingPage onNavigateBack={() => handleNavigation('home')} />;
       default:
         return <HomePage 
                   userProfile={profile} 
@@ -442,6 +487,9 @@ const MainApp: React.FC = () => {
                   isDailyTaskCompleted={isDailyTaskCompleted}
                   onNavigateToPlan={() => handleNavigation('plan', true)}
                   onContinueReading={handleContinueReading}
+                  onNavigateToAnnouncements={() => handleNavigation('announcements')}
+                  onNavigateToDiscipleship={() => handleNavigation('discipleship')}
+                  onNavigateToGiving={() => handleNavigation('giving')}
                 />;
     }
   };
@@ -449,19 +497,19 @@ const MainApp: React.FC = () => {
   const NavButton: React.FC<{ tab: 'home' | 'bible' | 'sermons' | 'plan' | 'settings'; label: string; icon: React.ReactNode }> = ({ tab, label, icon }) => {
     const isSettingsSubView = ['editProfile', 'notificationSettings', 'bookmarks'].includes(currentView);
     const isPlanSubView = ['planDetail', 'createPlan', 'calendar', 'readingCompleted'].includes(currentView);
-    const isSermonSubView = ['messageTracker'].includes(currentView);
+    const isSermonSubView = ['messageTracker', 'sermonDetail'].includes(currentView);
     const isActive = currentView === tab || (tab === 'settings' && isSettingsSubView) || (tab === 'plan' && isPlanSubView) || (tab === 'sermons' && isSermonSubView);
     
-    const activeClasses = 'text-brand-accent bg-brand-nav-active-bg font-semibold';
-    const inactiveClasses = 'text-brand-inactive';
+    const activeClasses = 'text-brand-accent bg-brand-nav-active-bg font-bold shadow-xs';
+    const inactiveClasses = 'text-brand-inactive hover:text-brand-dark';
 
     return (
         <button 
             onClick={() => handleNavigation(tab)}
-            className={`flex items-center justify-center gap-1.5 rounded-2xl px-2.5 py-2 transition-colors duration-200 ${isActive ? activeClasses : inactiveClasses}`}
+            className={`flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-1.5 transition-all duration-200 cursor-pointer ${isActive ? activeClasses : inactiveClasses}`}
         >
             {icon}
-            <span className="text-xs">{label}</span>
+            <span className="text-[11px] font-medium leading-none">{label}</span>
         </button>
     );
   };
@@ -475,11 +523,18 @@ const MainApp: React.FC = () => {
     'settings',
     'bible',
     'sermons',
+    'sermonDetail',
     'messageTracker',
+    'announcements',
+    'discipleship',
+    'giving',
     'readingCompleted',
     'bookmarks'
   ].includes(currentView);
 
+
+  const { user } = useAuth();
+  const activeUserName = user?.name || profile?.name || 'Disciple';
 
   return (
     <div className="bg-brand-bg min-h-screen max-w-md mx-auto flex flex-col">
@@ -490,7 +545,7 @@ const MainApp: React.FC = () => {
                 <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
             </div>
             <p className="text-brand-primary text-sm">
-              welcome, <span className="font-semibold">{getFirstName(profile.name)}</span>
+              welcome, <span className="font-semibold">{getFirstName(activeUserName)}</span>
             </p>
           </header>
         ) : !isHeaderHidden ? (
