@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getSermons, getSermonSeries, Sermon, SermonSeries } from '../services/sermonService';
+import {
+  getSermons,
+  getSermonSeries,
+  Sermon,
+  SermonSeries,
+  getLocalSermonProgressMap,
+  fetchUserSermonProgress,
+  toggleSermonCompleted,
+} from '../services/sermonService';
 import { getYouTubeThumbnail, getYouTubeVideoId } from '../utils/mediaUtils';
 import { formatDisplayDate } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
 
 interface Props {
   onNavigateToTracker?: () => void;
@@ -12,6 +21,8 @@ const SWR_SERMONS_CACHE_KEY = 'rooted_sermons_library_cache';
 const SWR_SERIES_CACHE_KEY = 'rooted_sermon_series_cache';
 
 export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSelectSermon }) => {
+  const { user } = useAuth();
+
   // Stale-While-Revalidate: Instant hydrate from localStorage
   const [sermons, setSermons] = useState<Sermon[]>(() => {
     try {
@@ -31,22 +42,28 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
     }
   });
 
+  const [progressMap, setProgressMap] = useState<Record<number, boolean>>(() =>
+    getLocalSermonProgressMap()
+  );
+
   const [loading, setLoading] = useState(sermons.length === 0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSeries, setSelectedSeries] = useState<string>('all');
-  const [mediaFilter, setMediaFilter] = useState<'all' | 'video' | 'audio'>('all');
+  const [mediaFilter, setMediaFilter] = useState<'all' | 'unread' | 'listened' | 'video' | 'audio'>('all');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [sermonRes, seriesRes] = await Promise.all([
+        const [sermonRes, seriesRes, userProgress] = await Promise.all([
           getSermons({ per_page: 500 }),
           getSermonSeries(),
+          fetchUserSermonProgress(user?.id),
         ]);
 
         const incomingSermons = sermonRes.data || [];
         setSermons(incomingSermons);
         setSeriesList(seriesRes || []);
+        setProgressMap(userProgress);
 
         // Persist to local SWR cache
         try {
@@ -63,7 +80,16 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
     };
 
     fetchData();
-  }, []);
+  }, [user?.id]);
+
+  const handleToggleListened = async (sermonId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newState = await toggleSermonCompleted(sermonId, user?.id);
+    setProgressMap((prev) => ({
+      ...prev,
+      [sermonId]: newState,
+    }));
+  };
 
   // Unified series options from backend + current loaded sermons
   const availableSeriesOptions = useMemo(() => {
@@ -97,23 +123,42 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
         (sermon.series?.id && sermon.series.id.toString() === selectedSeries) ||
         (sermon.series?.title && sermon.series.title.toLowerCase() === selectedSeries.toLowerCase());
 
-      const matchesMedia =
-        mediaFilter === 'all' ||
-        (mediaFilter === 'video' && (sermon.has_video || Boolean(sermon.youtube_video_url))) ||
-        (mediaFilter === 'audio' && (sermon.has_audio || Boolean(sermon.telegram_audio_url)));
+      const isCompleted = Boolean(progressMap[sermon.id]);
+
+      let matchesMedia = true;
+      if (mediaFilter === 'video') {
+        matchesMedia = sermon.has_video || Boolean(sermon.youtube_video_url);
+      } else if (mediaFilter === 'audio') {
+        matchesMedia = sermon.has_audio || Boolean(sermon.telegram_audio_url);
+      } else if (mediaFilter === 'listened') {
+        matchesMedia = isCompleted;
+      } else if (mediaFilter === 'unread') {
+        matchesMedia = !isCompleted;
+      }
 
       return matchesSearch && matchesSeries && matchesMedia;
     });
-  }, [sermons, searchQuery, selectedSeries, mediaFilter]);
+  }, [sermons, searchQuery, selectedSeries, mediaFilter, progressMap]);
+
+  const completedCount = useMemo(() => {
+    return Object.values(progressMap).filter(Boolean).length;
+  }, [progressMap]);
 
   return (
     <div className="min-h-screen px-3.5 sm:px-5 pt-3 pb-32 space-y-3 max-w-full overflow-hidden">
       {/* Compact Top Banner */}
       <div className="rounded-2xl bg-brand-dark p-4 sm:p-5 text-white shadow-xs flex items-center justify-between gap-3">
         <div>
-          <span className="inline-block rounded-full bg-brand-green/25 px-2.5 py-0.5 text-[10px] font-bold text-brand-green">
-            GKNI Media Archive
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="inline-block rounded-full bg-brand-green/25 px-2.5 py-0.5 text-[10px] font-bold text-brand-green">
+              GKNI Media Archive
+            </span>
+            {completedCount > 0 && (
+              <span className="inline-block rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 text-[10px] font-bold">
+                ✓ {completedCount} Listened
+              </span>
+            )}
+          </div>
           <h2 className="mt-1 text-base sm:text-lg font-black tracking-tight">Church Message Library</h2>
           <p className="text-[11px] text-neutral-300">
             {sermons.length > 0 ? `${sermons.length} apostolic teachings & archives` : 'Apostolic teachings & archives'}
@@ -165,6 +210,26 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
             }`}
           >
             All ({sermons.length})
+          </button>
+          <button
+            onClick={() => setMediaFilter('unread')}
+            className={`px-2.5 py-1 rounded-lg font-semibold transition-all shrink-0 cursor-pointer text-[11px] ${
+              mediaFilter === 'unread'
+                ? 'bg-brand-dark text-white shadow-2xs'
+                : 'bg-gray-100 text-brand-secondary hover:text-brand-dark'
+            }`}
+          >
+            Unheard
+          </button>
+          <button
+            onClick={() => setMediaFilter('listened')}
+            className={`px-2.5 py-1 rounded-lg font-semibold transition-all shrink-0 cursor-pointer text-[11px] ${
+              mediaFilter === 'listened'
+                ? 'bg-emerald-700 text-white shadow-2xs'
+                : 'bg-gray-100 text-brand-secondary hover:text-brand-dark'
+            }`}
+          >
+            ✓ Listened ({completedCount})
           </button>
           <button
             onClick={() => setMediaFilter('video')}
@@ -220,12 +285,17 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
           {filteredSermons.map((sermon) => {
             const hasPlayableVideo = Boolean(sermon.youtube_video_url && getYouTubeVideoId(sermon.youtube_video_url));
             const thumbnail = sermon.thumbnail_url || (sermon.youtube_video_url ? getYouTubeThumbnail(sermon.youtube_video_url) : null);
+            const isCompleted = Boolean(progressMap[sermon.id]);
 
             return (
               <div
                 key={sermon.id}
                 onClick={() => onSelectSermon(sermon)}
-                className="group relative flex flex-col justify-between rounded-2xl bg-white p-3 border border-gray-200/90 shadow-2xs hover:shadow-xs hover:border-brand-green/40 transition-all cursor-pointer overflow-hidden"
+                className={`group relative flex flex-col justify-between rounded-2xl bg-white p-3 border transition-all cursor-pointer overflow-hidden ${
+                  isCompleted
+                    ? 'border-emerald-200/90 bg-emerald-50/20 shadow-2xs hover:border-emerald-400'
+                    : 'border-gray-200/90 shadow-2xs hover:shadow-xs hover:border-brand-green/40'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   {/* Compact 16:9 Thumbnail */}
@@ -257,13 +327,21 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
 
                   {/* Sermon Details */}
                   <div className="min-w-0 flex-1 space-y-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="rounded-full bg-brand-green/10 px-2 py-0.5 text-[9.5px] font-extrabold text-brand-green truncate max-w-[140px]">
                         {sermon.service_type}
                       </span>
                       {sermon.series && (
                         <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[9.5px] font-medium text-brand-secondary truncate max-w-[110px]">
                           {sermon.series.title}
+                        </span>
+                      )}
+                      {isCompleted && (
+                        <span className="rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 px-2 py-0.5 text-[9.5px] font-bold inline-flex items-center gap-0.5">
+                          <svg className="w-2.5 h-2.5 text-emerald-700" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          Listened
                         </span>
                       )}
                     </div>
@@ -280,6 +358,7 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
 
                 <div className="pt-2 mt-2 border-t border-gray-100/90 flex items-center justify-between text-[10px] text-gray-400">
                   <span>{formatDisplayDate(sermon.date_preached) || `${sermon.month || ''} ${sermon.year || ''}`}</span>
+                  
                   <div className="flex items-center gap-1.5">
                     {hasPlayableVideo && (
                       <span className="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-100 font-bold text-[9.5px]">
@@ -291,9 +370,18 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
                         Audio
                       </span>
                     )}
-                    {sermon.duration && (
-                      <span className="text-gray-400 font-mono text-[9.5px]">{sermon.duration}</span>
-                    )}
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleToggleListened(sermon.id, e)}
+                      className={`px-2 py-0.5 rounded-lg border text-[9.5px] font-bold transition-all cursor-pointer ${
+                        isCompleted
+                          ? 'bg-white border-gray-200 text-gray-400 hover:text-red-500 hover:border-red-200'
+                          : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
+                      }`}
+                    >
+                      {isCompleted ? 'Unmark' : 'Mark as Listened'}
+                    </button>
                   </div>
                 </div>
               </div>

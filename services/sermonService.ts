@@ -133,20 +133,106 @@ export const fetchSermonSeries = async (): Promise<SermonSeries[]> => {
 export const getSermons = fetchSermons;
 export const getSermonSeries = fetchSermonSeries;
 
+const PROGRESS_CACHE_KEY = 'rooted_user_sermon_progress_map';
+
+export const getLocalSermonProgressMap = (): Record<number, boolean> => {
+  try {
+    const raw = localStorage.getItem(PROGRESS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+};
+
+export const setLocalSermonProgress = (sermonId: number, isCompleted: boolean): void => {
+  try {
+    const map = getLocalSermonProgressMap();
+    map[sermonId] = isCompleted;
+    localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify(map));
+  } catch {
+    // ignore storage quota errors
+  }
+};
+
+export const fetchUserSermonProgress = async (userId?: number): Promise<Record<number, boolean>> => {
+  const localMap = getLocalSermonProgressMap();
+  if (!userId) return localMap;
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}/sermon-progress`);
+    if (res.ok) {
+      const items: Array<{ sermon_id: number; is_completed: boolean }> = await res.json();
+      const updatedMap = { ...localMap };
+      items.forEach((item) => {
+        if (item.is_completed) {
+          updatedMap[item.sermon_id] = true;
+        }
+      });
+      localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify(updatedMap));
+      return updatedMap;
+    }
+  } catch (err) {
+    console.warn('Using cached sermon progress:', err);
+  }
+  return localMap;
+};
+
+export const toggleSermonCompleted = async (
+  sermonId: number,
+  userId?: number,
+  targetState?: boolean
+): Promise<boolean> => {
+  const currentMap = getLocalSermonProgressMap();
+  const newState = targetState !== undefined ? targetState : !currentMap[sermonId];
+  
+  // 1. Optimistic local update (0ms latency)
+  setLocalSermonProgress(sermonId, newState);
+
+  // 2. Async backend sync if user is authenticated
+  if (userId) {
+    try {
+      await fetch(`${API_BASE_URL}/sermons/${sermonId}/progress`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          user_id: userId,
+          is_completed: newState,
+          played_seconds: newState ? 100 : 0,
+        }),
+      });
+    } catch (err) {
+      console.warn('Failed to sync toggle to backend API:', err);
+    }
+  }
+
+  return newState;
+};
+
 export const recordSermonProgress = async (
   sermonId: number,
   data: {
+    user_id?: number;
     media_type?: string;
     current_time_seconds?: number;
     duration_seconds?: number;
     completed?: boolean;
   }
 ): Promise<void> => {
+  if (data.completed) {
+    setLocalSermonProgress(sermonId, true);
+  }
+  if (!data.user_id) return;
+
   try {
     await fetch(`${API_BASE_URL}/sermons/${sermonId}/progress`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        user_id: data.user_id,
+        played_seconds: data.current_time_seconds || 0,
+        total_seconds: data.duration_seconds || 0,
+        is_completed: data.completed || false,
+      }),
     });
   } catch (err) {
     // Non-blocking telemetry sync
@@ -160,6 +246,9 @@ export const syncSermonProgress = async (
   totalSeconds: number,
   isCompleted: boolean
 ): Promise<void> => {
+  if (isCompleted) {
+    setLocalSermonProgress(sermonId, true);
+  }
   try {
     await fetch(`${API_BASE_URL}/sermons/${sermonId}/progress`, {
       method: 'POST',

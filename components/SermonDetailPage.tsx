@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Sermon, recordSermonProgress } from '../services/sermonService';
+import {
+  Sermon,
+  recordSermonProgress,
+  getLocalSermonProgressMap,
+  toggleSermonCompleted,
+} from '../services/sermonService';
 import { getYouTubeEmbedUrl, getYouTubeVideoId } from '../utils/mediaUtils';
 import { formatDisplayDate } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
 
 interface Props {
   sermon: Sermon;
@@ -9,9 +15,15 @@ interface Props {
 }
 
 export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) => {
+  const { user } = useAuth();
   const hasPlayableVideo = Boolean(sermon.youtube_video_url && getYouTubeVideoId(sermon.youtube_video_url));
   const embedUrl = getYouTubeEmbedUrl(sermon.youtube_video_url);
   const [activeTab, setActiveTab] = useState<'video' | 'audio'>(hasPlayableVideo ? 'video' : 'audio');
+
+  const [isCompleted, setIsCompleted] = useState<boolean>(() => {
+    const map = getLocalSermonProgressMap();
+    return Boolean(map[sermon.id]);
+  });
 
   const [watchProgressSeconds, setWatchProgressSeconds] = useState(0);
   const [audioProgress, setAudioProgress] = useState(0);
@@ -22,9 +34,10 @@ export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) =>
   useEffect(() => {
     // Record initial view event
     recordSermonProgress(sermon.id, {
+      user_id: user?.id,
       media_type: activeTab,
       current_time_seconds: 0,
-      completed: false,
+      completed: isCompleted,
     });
 
     const interval = setInterval(() => {
@@ -34,16 +47,26 @@ export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) =>
         const percent = Math.floor((currentTime / duration) * 100);
 
         recordSermonProgress(sermon.id, {
+          user_id: user?.id,
           media_type: 'audio',
           current_time_seconds: currentTime,
           duration_seconds: duration,
-          completed: percent >= 90,
+          completed: percent >= 90 || isCompleted,
         });
+
+        if (percent >= 90 && !isCompleted) {
+          setIsCompleted(true);
+        }
       }
     }, 15000); // sync every 15 seconds
 
     return () => clearInterval(interval);
-  }, [sermon.id, activeTab]);
+  }, [sermon.id, activeTab, user?.id, isCompleted]);
+
+  const handleToggleListened = async () => {
+    const newState = await toggleSermonCompleted(sermon.id, user?.id);
+    setIsCompleted(newState);
+  };
 
   const renderMarkdownNotes = (notes?: string) => {
     if (!notes) {
@@ -129,7 +152,25 @@ export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) =>
           {sermon.title}
         </div>
 
-        <div className="w-6" />
+        <button
+          onClick={handleToggleListened}
+          className={`px-2.5 py-1 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+            isCompleted
+              ? 'bg-emerald-600 text-white shadow-2xs'
+              : 'bg-gray-100 text-brand-secondary hover:text-brand-dark'
+          }`}
+        >
+          {isCompleted ? (
+            <>
+              <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span>Listened</span>
+            </>
+          ) : (
+            <span>Mark Listened</span>
+          )}
+        </button>
       </div>
 
       <div className="mx-auto max-w-2xl px-3.5 sm:px-5 pt-3 space-y-3">
@@ -217,15 +258,28 @@ export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) =>
 
         {/* Compact Message Metadata Card */}
         <div className="rounded-2xl bg-white p-3.5 sm:p-4 border border-gray-200/90 shadow-2xs space-y-2">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-full bg-brand-green/10 px-2 py-0.5 text-[10px] font-extrabold text-brand-green">
-              {sermon.service_type}
-            </span>
-            {sermon.series && (
-              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">
-                {sermon.series.title} {sermon.series_part ? `(${sermon.series_part})` : ''}
+          <div className="flex flex-wrap items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="rounded-full bg-brand-green/10 px-2 py-0.5 text-[10px] font-extrabold text-brand-green">
+                {sermon.service_type}
               </span>
-            )}
+              {sermon.series && (
+                <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700">
+                  {sermon.series.title} {sermon.series_part ? `(${sermon.series_part})` : ''}
+                </span>
+              )}
+            </div>
+
+            <button
+              onClick={handleToggleListened}
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-colors cursor-pointer ${
+                isCompleted
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                  : 'bg-gray-50 border-gray-200 text-gray-600 hover:text-brand-dark'
+              }`}
+            >
+              {isCompleted ? '✓ Completed' : 'Mark as Listened'}
+            </button>
           </div>
 
           <h1 className="text-base sm:text-lg font-black text-brand-dark leading-tight">

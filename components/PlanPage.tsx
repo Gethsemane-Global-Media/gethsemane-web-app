@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { getCommunityPlans } from '../services/planService';
+import React, { useState, useEffect } from 'react';
+import { getCommunityPlans, fetchLiveCommunityPlans } from '../services/planService';
 import { Plan, PlanCategory } from '../types';
 import PlanCard from './PlanCard';
 
@@ -18,26 +18,33 @@ const CATEGORY_FILTERS: { label: string; value: PlanCategory | 'all' }[] = [
   { label: 'Devotional', value: 'devotional' },
 ];
 
-const allCommunityPlans = getCommunityPlans();
-
 const PlanPage: React.FC<PlanPageProps> = ({
   userPlans,
   onNavigateToCreatePlan,
   onNavigateToPlanDetail,
 }) => {
+  const [communityPlans, setCommunityPlans] = useState<Plan[]>(() => getCommunityPlans());
   const [activeTab, setActiveTab] = useState('discover');
   const [activeCategory, setActiveCategory] = useState<PlanCategory | 'all'>('all');
 
+  useEffect(() => {
+    fetchLiveCommunityPlans().then((plans) => {
+      if (plans && plans.length > 0) {
+        setCommunityPlans(plans);
+      }
+    });
+  }, []);
+
   const filteredPlans = activeCategory === 'all'
-    ? allCommunityPlans
-    : allCommunityPlans.filter(p => p.category === activeCategory);
+    ? communityPlans
+    : communityPlans.filter((p) => p.category === activeCategory);
 
   const TabButton: React.FC<{ tab: string; label: string }> = ({ tab, label }) => {
     const isActive = activeTab === tab;
     return (
       <button
         onClick={() => setActiveTab(tab)}
-        className={`font-medium text-lg transition-colors duration-200 ${
+        className={`font-medium text-lg transition-colors duration-200 cursor-pointer ${
           isActive ? 'text-brand-dark' : 'text-brand-secondary'
         }`}
         aria-pressed={isActive}
@@ -48,10 +55,10 @@ const PlanPage: React.FC<PlanPageProps> = ({
   };
 
   return (
-    <main className="flex-grow px-6 pt-2 overflow-y-auto pb-28">
-      <h1 className="text-4xl font-bold text-brand-dark leading-tight">Plans</h1>
-      <p className="text-brand-secondary mt-3 mb-8 text-[15px] leading-relaxed">
-        Choose any plan that suits your schedule and grow in the word.
+    <main className="flex-grow px-4 sm:px-6 pt-2 overflow-y-auto pb-36">
+      <h1 className="text-3xl sm:text-4xl font-bold text-brand-dark leading-tight">Plans</h1>
+      <p className="text-brand-secondary mt-2 mb-6 text-sm leading-relaxed">
+        Choose any community reading plan designed by GKNI discipleship leaders or create your own custom schedule.
       </p>
 
       <div className="flex items-center gap-8">
@@ -60,26 +67,26 @@ const PlanPage: React.FC<PlanPageProps> = ({
       </div>
 
       {activeTab === 'discover' && (
-        <div className="mt-6">
+        <div className="mt-5">
           <button
             onClick={onNavigateToCreatePlan}
-            className="w-full py-5 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
+            className="w-full py-4 bg-[#212631] text-white rounded-2xl font-bold text-base hover:bg-neutral-800 shadow-sm transition-all cursor-pointer"
           >
-            Create your own plan
+            + Create your own custom plan
           </button>
 
           {/* Category filter pills */}
-          <div className="flex gap-2 mt-6 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-2 mt-5 overflow-x-auto pb-1 no-scrollbar">
             {CATEGORY_FILTERS.map(({ label, value }) => {
               const isActive = activeCategory === value;
               return (
                 <button
                   key={value}
                   onClick={() => setActiveCategory(value)}
-                  className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#212631] text-white'
-                      : 'bg-white border border-gray-200 text-brand-secondary'
+                      ? 'bg-[#212631] text-white shadow-2xs'
+                      : 'bg-white border border-gray-200 text-brand-secondary hover:text-brand-dark'
                   }`}
                 >
                   {label}
@@ -88,7 +95,7 @@ const PlanPage: React.FC<PlanPageProps> = ({
             })}
           </div>
 
-          <p className="text-xs text-brand-secondary mt-4 mb-1">
+          <p className="text-xs text-brand-secondary mt-3 mb-1 font-medium">
             {filteredPlans.length} plan{filteredPlans.length !== 1 ? 's' : ''} available
           </p>
 
@@ -97,7 +104,7 @@ const PlanPage: React.FC<PlanPageProps> = ({
               key={plan.id}
               plan={plan}
               onSeeMore={onNavigateToPlanDetail}
-              className={index === 0 ? 'mt-3' : 'mt-6'}
+              className={index === 0 ? 'mt-2' : 'mt-4'}
             />
           ))}
 
@@ -110,20 +117,26 @@ const PlanPage: React.FC<PlanPageProps> = ({
       )}
 
       {activeTab === 'my-plans' && (
-        <div className="mt-8">
+        <div className="mt-6">
           {userPlans.length > 0 ? (
             userPlans.map((plan, index) => (
               <PlanCard
                 key={plan.id}
                 plan={plan}
                 onSeeMore={onNavigateToPlanDetail}
-                className={index === 0 ? 'mt-0' : 'mt-6'}
+                className={index === 0 ? 'mt-0' : 'mt-4'}
               />
             ))
           ) : (
-            <div className="mt-10 text-center text-brand-secondary">
-              <p>You haven&apos;t joined any plans yet.</p>
-              <p className="mt-2 text-sm">Discover a community plan or create your own.</p>
+            <div className="mt-8 rounded-2xl bg-white border border-gray-200/80 p-8 text-center text-brand-secondary shadow-2xs">
+              <p className="font-semibold text-brand-dark text-sm">You haven&apos;t joined any plans yet.</p>
+              <p className="mt-1 text-xs">Discover a GKNI community plan or create your own custom schedule.</p>
+              <button
+                onClick={() => setActiveTab('discover')}
+                className="mt-4 px-4 py-2 bg-brand-green text-white text-xs font-bold rounded-xl hover:bg-emerald-700 transition-all cursor-pointer"
+              >
+                Browse Community Plans
+              </button>
             </div>
           )}
         </div>
