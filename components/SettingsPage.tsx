@@ -32,9 +32,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
   const handleShare = async () => {
     const shareData = {
-      title: 'Behold App',
-      text: 'Join me on Behold to grow your faith!',
-      url: window.location.href,
+      title: 'Gethsemane',
+      text: 'Join me on Gethsemane to grow your faith!',
+      url: window.location.origin,
     };
 
     if (navigator.share) {
@@ -50,12 +50,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
   return (
     <div className="flex-grow flex flex-col">
-      <header className="flex items-center gap-2 px-6 h-20 shrink-0">
-        <div className="h-10 w-px bg-brand-green" />
-        <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
-      </header>
-
-      <main className="flex-grow px-6 pb-6 flex flex-col">
+      <main className="flex-grow px-6 pt-6 pb-6 flex flex-col">
         <h1 className="text-4xl font-bold text-brand-dark">Settings</h1>
 
         <section className="mt-8">

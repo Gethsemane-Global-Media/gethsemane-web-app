@@ -7,6 +7,8 @@ import { HomeIcon } from './icons/HomeIcon';
 import { BibleIcon } from './icons/BibleIcon';
 import { PlanIcon } from './icons/PlanIcon';
 import { SettingsIcon } from './icons/SettingsIcon';
+import { NotificationIcon } from './icons/NotificationIcon';
+import { AvatarIcon } from './icons/AvatarIcon';
 import PlanPage from './PlanPage';
 import CreatePlanPage from './CreatePlanPage';
 import PlanDetailPage from './PlanDetailPage';
@@ -238,7 +240,7 @@ const MainApp: React.FC = () => {
       if (wasReminderFiredToday()) return;
       markReminderFiredToday();
 
-      const title = 'Behold - Daily Reading';
+      const title = 'Gethsemane - Daily Reading';
       const body = activePlan
         ? `Time for today's reading: ${activePlan.title}`
         : 'Time for your daily Bible reading.';
@@ -539,23 +541,42 @@ const MainApp: React.FC = () => {
   return (
     <div className="bg-brand-bg min-h-screen max-w-md mx-auto flex flex-col">
       {!isHeaderHidden && currentView === 'home' ? (
-          <header className="flex items-center justify-between p-6 h-20 shrink-0">
+          <header className="flex items-center justify-between px-6 pt-5 pb-2 shrink-0">
             <div className="flex items-center gap-2">
-                <div className="h-10 w-px bg-brand-green" />
-                <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
+              {/* Brand name removed from header as user is already in the app */}
             </div>
-            <p className="text-brand-primary text-sm">
-              welcome, <span className="font-semibold">{getFirstName(activeUserName)}</span>
-            </p>
-          </header>
-        ) : !isHeaderHidden ? (
-          <header className="flex items-center p-6 h-20 shrink-0">
-            <div className="flex items-center gap-2">
-              <div className="h-10 w-px bg-brand-green" />
-              <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
+            <div className="flex items-center gap-3 ml-auto">
+              <button
+                onClick={() => handleNavigation('announcements')}
+                className="w-10 h-10 rounded-full bg-white border border-gray-200/80 shadow-xs flex items-center justify-center text-brand-dark hover:bg-gray-50 transition-colors cursor-pointer"
+                aria-label="Announcements & Notifications"
+                title="Notifications"
+              >
+                <NotificationIcon size={18} />
+              </button>
+              <button
+                onClick={() => handleNavigation('settings')}
+                className="w-10 h-10 rounded-full bg-white border border-gray-200/80 shadow-xs flex items-center justify-center text-brand-dark hover:bg-gray-50 transition-colors cursor-pointer"
+                aria-label="Settings"
+                title="Settings"
+              >
+                <SettingsIcon size={18} />
+              </button>
+              <button
+                onClick={() => handleNavigation('editProfile')}
+                className="w-10 h-10 rounded-full overflow-hidden border border-gray-200/80 shadow-xs flex items-center justify-center bg-gray-200 hover:opacity-90 transition-opacity cursor-pointer"
+                aria-label="Profile Avatar"
+                title="Profile"
+              >
+                {profile.avatarUrl ? (
+                  <img src={profile.avatarUrl} alt={activeUserName} className="w-full h-full object-cover" />
+                ) : (
+                  <AvatarIcon size={20} className="text-brand-dark" />
+                )}
+              </button>
             </div>
           </header>
-      ) : null}
+        ) : null}
 
       {currentView === 'home' && showBanner && activePlan && (
         <ReminderBanner

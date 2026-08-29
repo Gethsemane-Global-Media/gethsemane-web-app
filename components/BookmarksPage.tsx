@@ -17,14 +17,10 @@ const BookmarksPage: React.FC<BookmarksPageProps> = ({ onNavigateBack, onNavigat
 
   return (
     <div className="flex-grow flex flex-col h-screen">
-        <header className="flex items-center p-6 h-20 shrink-0">
-            <button onClick={onNavigateBack} className="text-brand-primary p-2 -ml-2">
+        <header className="flex items-center px-6 pt-4 pb-2 shrink-0">
+            <button onClick={onNavigateBack} className="text-brand-primary p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer" aria-label="Go back">
                 <ArrowLeftIcon />
             </button>
-            <div className="flex items-center ml-2">
-                <span className="h-8 w-px bg-green-700 mr-2"></span>
-                <span className="text-2xl font-medium tracking-wider text-brand-primary">BEHOLD</span>
-            </div>
         </header>
         <main className="flex-grow px-6 pb-24 overflow-y-auto">
             <h1 className="text-4xl font-medium text-brand-primary">Bookmarks</h1>

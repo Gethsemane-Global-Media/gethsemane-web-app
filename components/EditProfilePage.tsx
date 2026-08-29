@@ -27,13 +27,9 @@ const EditProfilePage: React.FC<EditProfilePageProps> = ({ onNavigateBack }) => 
   return (
     <div className="flex-grow p-6 flex flex-col">
         <header className="flex items-center h-16 shrink-0">
-            <button onClick={onNavigateBack} className="text-brand-primary p-2 -ml-2">
+            <button onClick={onNavigateBack} className="text-brand-primary p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer" aria-label="Go back">
                 <ArrowLeftIcon />
             </button>
-            <div className="flex items-center ml-2">
-                <span className="h-8 w-px bg-green-700 mr-2"></span>
-                <span className="text-2xl font-medium tracking-wider text-brand-primary">BEHOLD</span>
-            </div>
       </header>
       
       <main className="flex-grow flex flex-col">

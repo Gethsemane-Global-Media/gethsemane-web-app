@@ -20,6 +20,7 @@ import { useBookmarks } from '../hooks/useBookmarks';
 import { Bookmark } from '../types';
 import VerseActionMenu from './VerseActionMenu';
 import { Note } from '../types';
+import { EditIcon } from './icons/EditIcon';
 
 interface ReaderPageErrorBoundaryState {
   hasError: boolean;
@@ -358,22 +359,18 @@ export default function ReaderPage({
         <header className="flex items-center p-6 h-20 shrink-0">
           <form role="search" onSubmit={onSearchSubmit} className="relative w-full">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-secondary pointer-events-none"><SearchIcon /></div>
-            <input ref={searchInputRef} type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={`Search in ${currentVersion}…`} className="w-full pl-12 pr-12 py-3.5 bg-white rounded-full border border-gray-300 focus:ring-2 focus:ring-brand-accent focus:outline-none text-lg" autoFocus />
+            <input ref={searchInputRef} type="search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} aria-label={`Search in ${currentVersion}`} className="w-full pl-12 pr-12 py-3.5 bg-white rounded-full border border-gray-300 focus:ring-2 focus:ring-brand-accent focus:outline-none text-lg" autoFocus />
             <button type="button" onClick={handleCancelSearch} className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-secondary p-1" aria-label="Close search"><CloseIcon /></button>
           </form>
         </header>
       ) : isPlanReadingMode ? (
-        <header className="shrink-0 px-6 pt-2 pb-4">
-          <div className="flex items-center gap-2 h-14">
-            <div className="h-10 w-px bg-brand-green" />
-            <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
-          </div>
-          <div className="flex justify-between items-center text-brand-primary mt-1">
-            <span className="text-lg font-medium">{currentBook}</span>
-            <span className="text-lg font-medium">{currentChapter}</span>
+        <header className="shrink-0 px-6 pt-4 pb-4">
+          <div className="flex justify-between items-center text-brand-primary">
+            <span className="text-xl font-semibold">{currentBook}</span>
+            <span className="text-xl font-semibold">{currentChapter}</span>
             <button
               onClick={onOpenVersionSelector}
-              className="text-lg font-medium"
+              className="text-base font-semibold px-3 py-1 bg-white rounded-full border border-gray-200"
               aria-label={`Select Bible version, current is ${currentVersion}`}
             >
               {currentVersion}
@@ -381,18 +378,14 @@ export default function ReaderPage({
           </div>
           <div className="mt-3 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gray-400 rounded-full transition-all duration-300"
+              className="h-full bg-brand-green rounded-full transition-all duration-300"
               style={{ width: `${planChapterProgress}%` }}
             />
           </div>
         </header>
       ) : (
-        <header className="flex items-center justify-between p-6 h-20 shrink-0">
-          <div className="flex items-center">
-            <span className="h-8 w-px bg-green-700 mr-2" />
-            <span className="text-2xl font-medium tracking-wider text-brand-primary">BEHOLD</span>
-          </div>
-          <button onClick={() => onSearchingChange(true)} className="p-2 text-brand-primary" aria-label="Search Bible"><SearchIcon /></button>
+        <header className="flex items-center justify-end px-6 pt-4 pb-2 shrink-0">
+          <button onClick={() => onSearchingChange(true)} className="p-2.5 bg-white rounded-full border border-gray-200 text-brand-primary hover:bg-gray-50 transition-colors shadow-2xs" aria-label="Search Bible"><SearchIcon size={20} /></button>
         </header>
       )}
 
@@ -484,7 +477,7 @@ export default function ReaderPage({
                                           {verse.number}
                                         </span>
                                         <span className="flex-1 leading-relaxed">{verse.text}</span>
-                                        {hasNote && <span className="ml-2 text-brand-accent shrink-0 pt-1" role="img" aria-label="Note">✏️</span>}
+                                        {hasNote && <span className="ml-2 text-brand-accent shrink-0 pt-1" title="Note"><EditIcon size={14} /></span>}
                                       </div>
                                     )}
                                 </div>
@@ -559,7 +552,7 @@ export default function ReaderPage({
               rows={4}
               value={noteDraft}
               onChange={e => setNoteDraft(e.target.value)}
-              placeholder="Write your note here... Use *italic* or **bold** formatting."
+              aria-label="Note content"
             />
             <div className="flex justify-end gap-2">
               {editingNoteId && <button onClick={handleDeleteNote} className="px-4 py-2 bg-red-500 text-white rounded">Delete</button>}

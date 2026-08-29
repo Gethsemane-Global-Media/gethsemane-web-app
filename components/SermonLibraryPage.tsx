@@ -192,7 +192,7 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
           </svg>
           <input
             type="text"
-            placeholder="Search messages, ministers, or scriptures..."
+            aria-label="Search messages, ministers, or scriptures"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full rounded-xl bg-brand-bg pl-9 pr-3.5 py-2 text-xs text-brand-dark focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-green/40 border border-gray-200/80"

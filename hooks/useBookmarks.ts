@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Bookmark } from '../types';
 
-const BOOKMARKS_KEY = 'behold-bookmarks';
+const BOOKMARKS_KEY = 'gethsemane-bookmarks';
+const LEGACY_BOOKMARKS_KEY = 'behold-bookmarks';
 
 export const useBookmarks = (): [
   Bookmark[],
@@ -11,7 +12,7 @@ export const useBookmarks = (): [
 ] => {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>(() => {
     try {
-      const item = window.localStorage.getItem(BOOKMARKS_KEY);
+      const item = window.localStorage.getItem(BOOKMARKS_KEY) || window.localStorage.getItem(LEGACY_BOOKMARKS_KEY);
       return item ? JSON.parse(item) : [];
     } catch (error) {
       console.error('Error reading bookmarks from localStorage', error);

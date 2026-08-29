@@ -103,7 +103,7 @@ const BibleNavigationModal: React.FC<BibleNavigationModalProps> = ({ isOpen, onC
                             <div className="p-4">
                                 <input
                                     type="search"
-                                    placeholder="Search book…"
+                                    aria-label="Search books"
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                     className="w-full border rounded-full py-2 px-4 text-brand-primary focus:ring-2 focus:ring-brand-accent focus:outline-none"

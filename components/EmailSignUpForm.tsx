@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { GoogleIcon } from './icons/GoogleIcon';
+import { EyeIcon } from './icons/EyeIcon';
+import { EyeOffIcon } from './icons/EyeOffIcon';
 import { useAuth } from '../context/AuthContext';
 import { GoogleAuthModal } from './GoogleAuthModal';
 
@@ -13,6 +15,7 @@ const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, o
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
@@ -58,7 +61,6 @@ const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, o
                 required
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. John Doe"
                 className="w-full p-4 mt-1 bg-white rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-accent"
                 aria-label="Full name"
               />
@@ -71,24 +73,32 @@ const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, o
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your.email@example.com"
                 className="w-full p-4 mt-1 bg-white rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-accent"
                 aria-label="Email"
               />
             </div>
             <div>
               <label htmlFor="password-signup" className="text-sm text-brand-secondary">Password</label>
-              <input
-                id="password-signup"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Choose a secure password (min. 6 chars)"
-                className="w-full p-4 mt-1 bg-white rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-accent"
-                aria-label="Password"
-              />
+              <div className="relative mt-1">
+                <input
+                  id="password-signup"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full p-4 pr-12 bg-white rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-accent"
+                  aria-label="Password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-secondary hover:text-brand-dark p-1 cursor-pointer transition-colors"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -96,7 +106,7 @@ const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, o
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-brand-dark text-white rounded-full font-semibold text-base hover:bg-opacity-90 transition-colors disabled:opacity-50 shadow-md"
+              className="w-full py-4 bg-brand-dark text-white rounded-full font-semibold text-base hover:bg-opacity-90 transition-colors disabled:opacity-50 shadow-md cursor-pointer"
             >
               {loading ? 'Creating Account...' : 'Sign up'}
             </button>
@@ -109,7 +119,7 @@ const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, o
             <button
               type="button"
               onClick={() => setIsGoogleModalOpen(true)}
-              className="w-full flex items-center justify-center gap-3 py-3.5 bg-white rounded-full border border-gray-200 text-brand-primary font-medium hover:bg-gray-50 transition-colors shadow-sm"
+              className="w-full flex items-center justify-center gap-3 py-3.5 bg-white rounded-full border border-gray-200 text-brand-primary font-medium hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
             >
               <GoogleIcon />
               Sign up with Google
@@ -120,7 +130,7 @@ const EmailSignUpForm: React.FC<EmailSignUpFormProps> = ({ onNavigateToSignIn, o
         <div className="pb-4 pt-6">
           <p className="text-center text-brand-secondary">
             Have an account?{' '}
-            <button type="button" onClick={onNavigateToSignIn} className="font-semibold text-brand-accent hover:underline">
+            <button type="button" onClick={onNavigateToSignIn} className="font-semibold text-brand-accent hover:underline cursor-pointer">
               Sign in
             </button>
           </p>

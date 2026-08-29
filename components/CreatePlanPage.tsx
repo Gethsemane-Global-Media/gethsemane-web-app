@@ -9,7 +9,7 @@ interface CreatePlanPageProps {
 }
 
 const inputClasses =
-  'w-full px-5 py-4 mt-2 bg-[#E9E7EF] rounded-full border-0 text-brand-dark placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-accent/40';
+  'w-full px-5 py-4 mt-2 bg-[#E9E7EF] rounded-full border-0 text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-accent/40';
 
 const checkboxClasses =
   'w-5 h-5 shrink-0 rounded border-2 border-brand-primary text-brand-green focus:ring-brand-green focus:ring-offset-0';
@@ -112,14 +112,10 @@ const CreatePlanPage: React.FC<CreatePlanPageProps> = ({ onNavigateBack, onAddPl
 
   return (
     <div className="bg-brand-bg min-h-screen max-w-md mx-auto flex flex-col">
-      <header className="shrink-0 px-6 pt-2">
-        <div className="flex items-center gap-2 h-16">
-          <div className="h-10 w-px bg-brand-green" />
-          <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
-        </div>
+      <header className="shrink-0 px-6 pt-4 pb-2">
         <button
           onClick={onNavigateBack}
-          className="text-brand-primary p-1 -ml-1 mb-2"
+          className="text-brand-primary p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
           aria-label="Go back"
         >
           <ChevronLeftIcon size={28} />
@@ -142,7 +138,6 @@ const CreatePlanPage: React.FC<CreatePlanPageProps> = ({ onNavigateBack, onAddPl
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter a title"
               className={inputClasses}
             />
           </div>
@@ -155,7 +150,6 @@ const CreatePlanPage: React.FC<CreatePlanPageProps> = ({ onNavigateBack, onAddPl
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="a short description of the plan"
               className={inputClasses}
             />
           </div>

@@ -96,13 +96,7 @@ const StudioPage: React.FC = () => {
 
     return (
         <div className="flex-grow flex flex-col h-screen">
-            <header className="flex items-center p-6 h-20 shrink-0">
-                <div className="flex items-center">
-                    <span className="h-8 w-px bg-green-700 mr-2"></span>
-                    <span className="text-2xl font-medium tracking-wider text-brand-primary">BEHOLD</span>
-                </div>
-            </header>
-            <main className="flex-grow p-6 overflow-y-auto pb-28">
+            <main className="flex-grow p-6 overflow-y-auto pb-28 pt-6">
                 <h1 className="text-4xl font-medium text-brand-primary">AI Portrait Studio</h1>
                 <p className="text-brand-secondary mt-2 mb-8">
                     Upload a photo of yourself to generate a cinematic, black and white portrait.

@@ -70,7 +70,8 @@ class BiblePageErrorBoundary extends Component<{ children: ReactNode }, { hasErr
     }
 }
 
-const LAST_READ_KEY = 'behold-last-read';
+const LAST_READ_KEY = 'gethsemane-last-read';
+const LEGACY_LAST_READ_KEY = 'behold-last-read';
 
 const parseChapterText = (chapterText: string): { number: string; text: string }[] => {
     if (!chapterText || typeof chapterText !== 'string') return [];
@@ -113,7 +114,7 @@ const BiblePage: React.FC<BiblePageProps> = ({
 }) => {
     const [currentBook, setCurrentBook] = useState(() => {
         try { 
-            const saved = localStorage.getItem(LAST_READ_KEY); 
+            const saved = localStorage.getItem(LAST_READ_KEY) || localStorage.getItem(LEGACY_LAST_READ_KEY); 
             if (saved) {
                 const parsed = JSON.parse(saved);
                 return parsed && typeof parsed === 'object' && parsed.book && BIBLE_BOOKS_LIST.includes(parsed.book) 
@@ -127,7 +128,7 @@ const BiblePage: React.FC<BiblePageProps> = ({
     });
     const [currentChapter, setCurrentChapter] = useState(() => {
         try { 
-            const saved = localStorage.getItem(LAST_READ_KEY); 
+            const saved = localStorage.getItem(LAST_READ_KEY) || localStorage.getItem(LEGACY_LAST_READ_KEY); 
             if (saved) {
                 const parsed = JSON.parse(saved);
                 return parsed && typeof parsed === 'object' && parsed.chapter && typeof parsed.chapter === 'number' && parsed.chapter > 0

@@ -120,7 +120,7 @@ const HomePage: React.FC<HomePageProps> = ({
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json',
                     'HTTP-Referer': window.location.origin,
-                    'X-Title': 'Behold Bible App',
+                    'X-Title': 'Gethsemane Bible App',
                 },
                 body: JSON.stringify({
                     model: 'openai/gpt-3.5-turbo',

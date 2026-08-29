@@ -92,8 +92,8 @@ const ReferenceSelectorPage: React.FC<ReferenceSelectorPageProps> = ({
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search"
-            className="w-full border border-gray-300 rounded-xl py-3.5 pl-4 pr-10 text-brand-dark placeholder:text-brand-secondary focus:outline-none focus:ring-2 focus:ring-brand-accent/30 bg-white"
+            aria-label="Search books"
+            className="w-full border border-gray-300 rounded-xl py-3.5 pl-4 pr-10 text-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-accent/30 bg-white"
           />
           <div className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-secondary pointer-events-none">
             <ChevronDownIcon size={20} />

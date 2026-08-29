@@ -97,11 +97,7 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onOnboardingComplete })
         ></div>
 
       <div className="relative z-10 flex flex-col flex-grow h-full">
-        <header className="flex items-center h-20 shrink-0 px-6">
-          <div className="flex items-center">
-            <span className="h-8 w-px bg-brand-dark mr-2"></span>
-            <span className="text-2xl font-medium tracking-wider text-brand-dark">BEHOLD</span>
-          </div>
+        <header className="h-16 shrink-0 px-6">
         </header>
 
         <div className="flex-grow flex relative overflow-hidden">

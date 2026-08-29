@@ -32,14 +32,10 @@ const CircularProgress: React.FC<{ percent: number }> = ({ percent }) => {
 };
 
 const PlanDetailHeader: React.FC<{ onNavigateBack: () => void }> = ({ onNavigateBack }) => (
-  <header className="shrink-0 px-6 pt-2">
-    <div className="flex items-center gap-2 h-16">
-      <div className="h-10 w-px bg-brand-green" />
-      <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
-    </div>
+  <header className="shrink-0 px-6 pt-4 pb-2">
     <button
       onClick={onNavigateBack}
-      className="text-brand-primary p-1 -ml-1 mb-2"
+      className="text-brand-primary p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
       aria-label="Go back"
     >
       <ChevronLeftIcon size={28} />
@@ -239,7 +235,7 @@ const PlanDetailPage: React.FC<PlanDetailPageProps> = ({ plan, onNavigateBack, o
             onClick={onNavigateToCalendar}
             className="flex justify-between items-center w-full text-brand-green font-medium pt-1"
           >
-            <span>View calender</span>
+            <span>View calendar</span>
             <ChevronRightIcon className="text-brand-green" />
           </button>
         </div>

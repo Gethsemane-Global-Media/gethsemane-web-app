@@ -217,7 +217,6 @@ export const DiscipleshipPage: React.FC<Props> = ({ onNavigateBack }) => {
                     required
                     value={applicantName}
                     onChange={(e) => setApplicantName(e.target.value)}
-                    placeholder="e.g. John Emmanuel"
                     className="mt-1 w-full rounded-2xl bg-brand-bg px-3.5 py-2 text-xs border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-green/30"
                   />
                 </div>
@@ -229,7 +228,6 @@ export const DiscipleshipPage: React.FC<Props> = ({ onNavigateBack }) => {
                     required
                     value={applicantEmail}
                     onChange={(e) => setApplicantEmail(e.target.value)}
-                    placeholder="john@example.com"
                     className="mt-1 w-full rounded-2xl bg-brand-bg px-3.5 py-2 text-xs border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-green/30"
                   />
                 </div>
@@ -241,7 +239,6 @@ export const DiscipleshipPage: React.FC<Props> = ({ onNavigateBack }) => {
                     required
                     value={applicantPhone}
                     onChange={(e) => setApplicantPhone(e.target.value)}
-                    placeholder="+234..."
                     className="mt-1 w-full rounded-2xl bg-brand-bg px-3.5 py-2 text-xs border border-gray-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-green/30"
                   />
                 </div>

@@ -6,7 +6,7 @@ interface ForgotPasswordFormProps {
 }
 
 const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onNavigateToSentScreen }) => {
-  const [email, setEmail] = useState('johndoe@gmail.com');
+  const [email, setEmail] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

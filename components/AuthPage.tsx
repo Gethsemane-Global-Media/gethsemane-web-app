@@ -94,18 +94,12 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="bg-brand-bg min-h-screen flex flex-col p-6 max-w-md mx-auto">
-      <header className={`flex items-center shrink-0 ${isSuccessView ? 'h-20' : 'h-16'}`}>
+      <header className={`flex items-center shrink-0 ${isSuccessView ? 'h-12' : 'h-16'}`}>
         {showBackButton && (
-          <button onClick={handleBack} className="text-brand-primary p-2 -ml-2">
+          <button onClick={handleBack} className="text-brand-primary p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer" aria-label="Go back">
             <ArrowLeftIcon />
           </button>
         )}
-        <div className={`flex items-center gap-2 ${showBackButton ? 'flex-grow' : ''}`}>
-          <div className="h-10 w-px bg-brand-green" />
-          <span className={`font-medium tracking-wider text-brand-green ${isSuccessView ? 'text-3xl' : 'text-2xl'}`}>
-            BEHOLD
-          </span>
-        </div>
       </header>
       
       <main className="flex-grow flex flex-col">

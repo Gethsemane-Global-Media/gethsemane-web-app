@@ -159,14 +159,10 @@ const NotificationSettingsPage: React.FC<NotificationSettingsPageProps> = ({ onN
 
   return (
     <div className="flex flex-col min-h-screen bg-brand-bg">
-      <header className="shrink-0 px-6 pt-2">
-        <div className="flex items-center gap-2 h-14">
-          <div className="h-10 w-px bg-brand-green" />
-          <span className="text-3xl font-medium tracking-wider text-brand-green">BEHOLD</span>
-        </div>
+      <header className="shrink-0 px-6 pt-4 pb-2">
         <button
           onClick={onNavigateBack}
-          className="text-brand-primary p-1 -ml-1 mb-1"
+          className="text-brand-primary p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
           aria-label="Go back"
         >
           <ChevronLeftIcon size={28} />

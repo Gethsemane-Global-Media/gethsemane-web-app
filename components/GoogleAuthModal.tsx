@@ -154,7 +154,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
             {isSignUp ? 'Sign up with Google' : 'Sign in with Google'}
           </h2>
           <p className="text-xs text-neutral-500 mt-1">
-            to continue to <strong className="text-neutral-700 dark:text-neutral-300">The Bible Experience</strong>
+            to continue to <strong className="text-neutral-700 dark:text-neutral-300">Gethsemane</strong>
           </p>
         </div>
 
@@ -200,7 +200,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
         {/* Footer info */}
         <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 text-center">
           <p className="text-[10px] text-neutral-400">
-            Google will securely share your verified name, email address, and profile photo with Behold.
+            Google will securely share your verified name, email address, and profile photo with Gethsemane.
           </p>
         </div>
       </div>

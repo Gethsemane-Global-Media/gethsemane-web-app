@@ -85,7 +85,7 @@ export const AnnouncementsPage: React.FC<Props> = ({ onNavigateBack }) => {
             </svg>
             <input
               type="text"
-              placeholder="Search announcements..."
+              aria-label="Search announcements"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full rounded-2xl bg-brand-bg pl-10 pr-4 py-2.5 text-xs text-brand-dark focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-green/30 border border-gray-200"

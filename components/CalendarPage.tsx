@@ -110,7 +110,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ plan, onNavigateBack }) => 
     const selectedReading = getReadingForDate(selectedDate);
 
     return (
-        <div className="bg-brand-bg min-h-screen max-w-md mx-auto flex flex-col p-6">
+        <div className="bg-brand-bg min-h-screen max-w-md mx-auto flex flex-col p-6 pb-32 overflow-y-auto">
             <header className="flex items-center h-16 shrink-0 -ml-2">
                 <button onClick={onNavigateBack} className="text-brand-primary p-2">
                     <ArrowLeftIcon />
@@ -125,7 +125,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ plan, onNavigateBack }) => 
                    <button onClick={() => changeMonth(1)} className="text-brand-primary p-2"><ChevronRightIcon /></button>
                 </div>
             </header>
-            <main className="flex-grow flex flex-col mt-4">
+            <main className="flex-grow flex flex-col mt-4 pb-8">
                 <div className="grid grid-cols-7 gap-y-2 text-center text-brand-secondary text-sm">
                     {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => <div key={day}>{day}</div>)}
                 </div>
@@ -133,7 +133,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ plan, onNavigateBack }) => 
                     {renderCalendarGrid()}
                 </div>
 
-                <div className="mt-auto pb-4 pt-8">
+                <div className="mt-6 pb-6 pt-4">
                     <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                         <p className="text-sm text-brand-secondary">{selectedDate.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                         {selectedReading ? (
