@@ -114,3 +114,47 @@ export const linkStudentAccount = async (
   const data = await response.json();
   return data.user;
 };
+
+export const uploadUserAvatarApi = async (userId: number, imageBlobOrFile: Blob | File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('avatar', imageBlobOrFile, 'avatar.jpg');
+
+  const response = await fetch(`${API_BASE_URL}/users/${userId}/avatar`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || 'Failed to upload avatar.');
+  }
+
+  const data = await response.json();
+  return data.avatar_url;
+};
+
+export const updateUserProfileApi = async (
+  userId: number,
+  payload: { name?: string; avatar_url?: string }
+): Promise<AuthUser> => {
+  const response = await fetch(`${API_BASE_URL}/users/${userId}/profile`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errData = await response.json().catch(() => ({}));
+    throw new Error(errData.message || 'Failed to update profile.');
+  }
+
+  const data = await response.json();
+  return data.user;
+};
+

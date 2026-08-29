@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, ReactNode, Component, ErrorInfo } from 'react';
 import { BIBLE_CHAPTERS, BIBLE_BOOKS_LIST } from '../data/bibleBooks';
-import { BIBLE_VERSIONS } from '../data/bibleVersions';
-import { getBibleText, getChapterText } from '../data/bibleTextManager';
+import { getBibleText, getChapterText, searchFullBible } from '../data/bibleTextManager';
 import { ReaderPageWithErrorBoundary } from './ReaderPage';
 import ReferencesPage from './ReferencesPage';
 import ReferenceSelectorPage from './ReferenceSelectorPage';
@@ -302,58 +301,7 @@ const BiblePage: React.FC<BiblePageProps> = ({
         setIsLoadingSearch(true);
         
         try {
-            const results: SearchResult[] = [];
-            const bibleData = getBibleText();
-            if (!bibleData) {
-                console.error('No Bible data available for search');
-                setSearchResults([]);
-                setIsLoadingSearch(false);
-                return;
-            }
-            
-            const versionData = bibleData[currentVersion];
-            if (!versionData) {
-                console.error(`Version ${currentVersion} not found for search`);
-                setSearchResults([]);
-                setIsLoadingSearch(false);
-                return;
-            }
-            
-            const query = searchQuery.toLowerCase();
-
-            for (const book in versionData) {
-                if (Object.prototype.hasOwnProperty.call(versionData, book)) {
-                    const bookData = versionData[book];
-                    if (!bookData) continue;
-                    
-                    for (const chapter in bookData) {
-                        if (Object.prototype.hasOwnProperty.call(bookData, chapter)) {
-                            const chapterText = bookData[chapter];
-                            if (chapterText && typeof chapterText === 'string' && chapterText.toLowerCase().includes(query)) {
-                                try {
-                                    const verses = parseChapterText(chapterText);
-                                    if (verses && Array.isArray(verses)) {
-                                        for (const verse of verses) {
-                                            if (verse && verse.text && verse.text.toLowerCase().includes(query)) {
-                                                results.push({
-                                                    version: currentVersion,
-                                                    book,
-                                                    chapter: parseInt(chapter) || 1,
-                                                    verse: verse.number || '1',
-                                                    text: verse.text,
-                                                });
-                                            }
-                                        }
-                                    }
-                                } catch (parseError) {
-                                    console.error(`Error parsing chapter ${book} ${chapter}:`, parseError);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
+            const results = await searchFullBible(currentVersion, searchQuery);
             setSearchResults(results);
         } catch (error) {
             console.error('Search error:', error);

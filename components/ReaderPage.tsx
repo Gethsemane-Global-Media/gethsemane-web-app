@@ -261,17 +261,35 @@ export default function ReaderPage({
   };
 
 
+  // Scroll to and highlight selected verse once chapter verses are fully parsed
   useEffect(() => {
-    if (scrollToVerse === null) return;
-    const verseElement = document.getElementById(`verse-${scrollToVerse}`);
-    if (verseElement) {
-      verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      verseElement.classList.add('bg-yellow-200', 'transition-colors', 'duration-1000', 'rounded');
-      const timer = setTimeout(() => verseElement.classList.remove('bg-yellow-200'), 2500);
-      onScrolledToVerse();
-      return () => clearTimeout(timer);
-    }
-  }, [scrollToVerse, parsedVerses, onScrolledToVerse]);
+    if (scrollToVerse === null || isLoadingChapter || parsedVerses.length === 0) return;
+
+    // Small timeout to guarantee DOM repaint
+    const scrollTimer = setTimeout(() => {
+      const verseElement = document.getElementById(`verse-${scrollToVerse}`);
+      if (verseElement) {
+        verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        verseElement.classList.add(
+          'bg-amber-100',
+          'dark:bg-amber-950/60',
+          'ring-2',
+          'ring-brand-green/60',
+          'rounded-xl',
+          'p-2.5',
+          'transition-all',
+          'duration-700'
+        );
+        const clearTimer = setTimeout(() => {
+          verseElement.classList.remove('bg-amber-100', 'dark:bg-amber-950/60', 'ring-2', 'ring-brand-green/60');
+          onScrolledToVerse();
+        }, 3500);
+        return () => clearTimeout(clearTimer);
+      }
+    }, 120);
+
+    return () => clearTimeout(scrollTimer);
+  }, [scrollToVerse, isLoadingChapter, parsedVerses, onScrolledToVerse]);
 
   // Swipe gesture navigation
   useEffect(() => {
@@ -306,9 +324,11 @@ export default function ReaderPage({
   }, [handleNextChapter, handlePrevChapter]);
 
   useEffect(() => {
-    mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scrollToVerse === null) {
+      mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setSelectedVerse(null); // Close popover on chapter change
-  }, [currentBook, currentChapter]);
+  }, [currentBook, currentChapter, scrollToVerse]);
 
   useEffect(() => {
     if (isSearching) searchInputRef.current?.focus();

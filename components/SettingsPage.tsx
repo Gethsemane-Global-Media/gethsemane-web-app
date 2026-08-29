@@ -21,8 +21,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onNavigateToCreatePlan,
 }) => {
   const [profile] = useUserProfile();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [showShareModal, setShowShareModal] = useState(false);
+
+  // Authenticated user state takes precedence
+  const displayName = user?.name || profile.name || 'Disciple';
+  const displayRole = user?.role || profile.role || 'Community Member';
+  const displayAvatar = user?.avatarUrl || profile.avatarUrl;
 
   const settingsItems = [
     { icon: <PlusCircleIcon />, label: 'Create Bible plans', onClick: onNavigateToCreatePlan },
@@ -49,22 +54,22 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   return (
-    <div className="flex-grow flex flex-col">
-      <main className="flex-grow px-6 pt-6 pb-6 flex flex-col">
+    <div className="flex-grow flex flex-col min-h-screen overflow-y-auto pb-36">
+      <main className="flex-grow px-6 pt-6 flex flex-col">
         <h1 className="text-4xl font-bold text-brand-dark">Settings</h1>
 
         <section className="mt-8">
           <div className="flex items-start gap-5">
             <div className="shrink-0">
               <div
-                className="w-24 h-24 rounded-full bg-gray-200 bg-cover bg-center"
-                style={{ backgroundImage: `url('${profile.avatarUrl}')` }}
+                className="w-24 h-24 rounded-full bg-gray-200 bg-cover bg-center border-2 border-white shadow-sm"
+                style={{ backgroundImage: `url('${displayAvatar}')` }}
                 role="img"
-                aria-label={`${profile.name}'s profile`}
+                aria-label={`${displayName}'s profile`}
               />
               <button
                 onClick={onNavigateToEditProfile}
-                className="mt-3 text-brand-dark font-medium text-sm hover:underline"
+                className="mt-3 text-brand-dark font-medium text-sm hover:underline cursor-pointer"
               >
                 Edit profile
               </button>
@@ -75,8 +80,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                 <div className="w-4 h-px bg-brand-primary" />
                 <div className="w-1.5 h-1.5 bg-brand-primary rounded-full" />
               </div>
-              <h2 className="text-xl font-medium text-brand-dark leading-tight">{profile.name}</h2>
-              <p className="text-brand-secondary text-sm mt-1">{profile.role}</p>
+              <h2 className="text-xl font-medium text-brand-dark leading-tight truncate">{displayName}</h2>
+              <p className="text-brand-secondary text-sm mt-1">{displayRole}</p>
             </div>
           </div>
         </section>
@@ -86,7 +91,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
             <button
               key={item.label}
               onClick={item.onClick}
-              className="flex items-center w-full text-left gap-4 text-brand-dark text-lg"
+              className="flex items-center w-full text-left gap-4 text-brand-dark text-lg hover:text-brand-accent transition-colors cursor-pointer"
             >
               <span className="text-brand-primary shrink-0">{item.icon}</span>
               <span>{item.label}</span>
@@ -95,7 +100,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
           <button
             onClick={logout}
-            className="flex items-center w-full text-left gap-4 text-red-600 text-lg hover:opacity-80 transition-opacity"
+            className="flex items-center w-full text-left gap-4 text-red-600 text-lg hover:opacity-80 transition-opacity cursor-pointer"
           >
             <span className="shrink-0">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,10 +111,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
           </button>
         </section>
 
-        <section className="mt-auto pb-24 pt-10 text-center">
+        <section className="mt-12 pt-6 text-center">
           <button
             onClick={handleShare}
-            className="inline-flex items-center justify-center gap-3 text-brand-accent font-semibold"
+            className="inline-flex items-center justify-center gap-3 text-brand-accent font-semibold hover:underline cursor-pointer"
           >
             <ShareIcon />
             <span>Share with friends</span>

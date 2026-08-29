@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { GoogleIcon } from './icons/GoogleIcon';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { GoogleIcon } from './icons/GoogleIcon';
 
 interface GoogleAuthModalProps {
   isOpen: boolean;
@@ -11,7 +11,15 @@ interface GoogleAuthModalProps {
 
 declare global {
   interface Window {
-    google?: any;
+    google?: {
+      accounts: {
+        id: {
+          initialize: (config: any) => void;
+          renderButton: (parent: HTMLElement, options: any) => void;
+          prompt: () => void;
+        };
+      };
+    };
   }
 }
 
@@ -24,12 +32,12 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
   const { loginWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const googleBtnRef = useRef<HTMLDivElement | null>(null);
+  const googleBtnRef = useRef<HTMLDivElement>(null);
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
-  // Parse Google JWT ID Token safely without external deps
-  const parseJwt = (token: string) => {
+  // Decode JWT payload safely
+  const parseJwtPayload = (token: string) => {
     try {
       const base64Url = token.split('.')[1];
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -47,7 +55,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
 
   const handleCredentialResponse = async (response: any) => {
     if (!response.credential) {
-      setErrorMsg('No Google credential token received.');
+      setErrorMsg('No credential returned from Google.');
       return;
     }
 
@@ -55,7 +63,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
     setErrorMsg(null);
 
     try {
-      const payload = parseJwt(response.credential);
+      const payload = parseJwtPayload(response.credential);
       if (!payload || !payload.email) {
         throw new Error('Could not parse Google user profile.');
       }
@@ -85,18 +93,22 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
       if (!googleClientId) return;
 
       if (window.google?.accounts?.id && googleBtnRef.current) {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: handleCredentialResponse,
-        });
+        try {
+          window.google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleCredentialResponse,
+          });
 
-        window.google.accounts.id.renderButton(googleBtnRef.current, {
-          theme: 'outline',
-          size: 'large',
-          width: 320,
-          text: isSignUp ? 'signup_with' : 'signin_with',
-          shape: 'pill',
-        });
+          window.google.accounts.id.renderButton(googleBtnRef.current, {
+            theme: 'outline',
+            size: 'large',
+            width: 300,
+            text: isSignUp ? 'signup_with' : 'signin_with',
+            shape: 'pill',
+          });
+        } catch (e) {
+          console.error('Error rendering Google button:', e);
+        }
       }
     };
 
@@ -138,16 +150,17 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 text-neutral-400 hover:text-neutral-600 dark:hover:text-white p-1.5 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer transition-colors"
+          className="absolute right-4 top-4 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1.5 rounded-full transition-colors cursor-pointer"
+          aria-label="Close"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        {/* Google Header */}
-        <div className="text-center pt-2 pb-5 border-b border-neutral-100 dark:border-neutral-800">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-sm mb-3">
+        {/* Modal Header */}
+        <div className="text-center pt-2">
+          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 shadow-xs mb-3">
             <GoogleIcon />
           </div>
           <h2 className="text-lg font-bold">
@@ -164,20 +177,22 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
           </div>
         )}
 
-        {/* Production Google Identity Render Target */}
-        <div className="py-6 flex flex-col items-center justify-center min-h-[120px]">
+        {/* Google Authentication Container */}
+        <div className="py-6 flex flex-col items-center justify-center min-h-[110px]">
           {loading ? (
-            <div className="text-center space-y-2 py-4">
-              <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-brand-green border-t-transparent"></div>
-              <p className="text-xs text-neutral-500">Authenticating with Google Identity...</p>
+            <div className="flex flex-col items-center justify-center space-y-3 py-4">
+              <div className="h-7 w-7 animate-spin rounded-full border-3 border-brand-green border-t-transparent" />
+              <p className="text-xs font-medium text-neutral-600 dark:text-neutral-300">
+                Authenticating with Google Identity...
+              </p>
             </div>
           ) : googleClientId ? (
             <div className="w-full flex flex-col items-center space-y-3">
-              <div ref={googleBtnRef} className="flex justify-center" />
+              <div ref={googleBtnRef} className="flex justify-center w-full" />
               <button
                 type="button"
                 onClick={handleOAuthRedirect}
-                className="text-[11px] text-neutral-500 hover:text-brand-green underline transition-colors"
+                className="text-[11px] text-neutral-500 hover:text-brand-green underline transition-colors cursor-pointer"
               >
                 Or continue via Google Web OAuth redirect
               </button>

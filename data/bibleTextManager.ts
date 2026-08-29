@@ -1,8 +1,23 @@
+import { bibleText as initialBibleText } from './bibleText';
+import { BIBLE_VERSIONS, BibleVersion } from './bibleVersions';
+import { BIBLE_BOOKS_LIST } from './bibleBooks';
+
+export interface Verse {
+  verse: number;
+  text: string;
+}
+
+export interface BibleSearchResult {
+  version: string;
+  book: string;
+  chapter: number;
+  verse: string;
+  text: string;
+}
+
 export const parseChapterText = (chapterText: string): Verse[] => {
   try {
-    // Handle case where chapterText is undefined or null
     if (!chapterText || typeof chapterText !== 'string') {
-      console.warn('Invalid chapterText provided to parseChapterText:', chapterText);
       return [];
     }
     
@@ -23,28 +38,31 @@ export const parseChapterText = (chapterText: string): Verse[] => {
       return verses;
     }
     
-    // Handle {1} Verse text {2} Verse text format (from free APIs)
+    // Handle {1} or {1:1} Verse text {2} Verse text format
     if (chapterText.includes('{') && chapterText.includes('}')) {
-      const parts = chapterText.split(/\{(\d+)\}/).filter(Boolean);
+      const verseRegex = /{(\d+(?::\d+)?)}\s*([^]*?)(?=\s*{(\d+(?::\d+)?)}|$)/g;
       const verses: Verse[] = [];
+      let match;
       
-      for (let i = 0; i < parts.length; i += 2) {
-        const verseNum = parseInt(parts[i], 10);
-        const text = (parts[i + 1] || '').trim();
+      while ((match = verseRegex.exec(chapterText)) !== null) {
+        const rawNum = match[1].includes(':') ? match[1].split(':')[1] : match[1];
+        const verseNum = parseInt(rawNum, 10);
+        const text = match[2] ? match[2].trim().replace(/\s+/g, ' ') : '';
         if (!isNaN(verseNum) && text) {
           verses.push({ verse: verseNum, text });
         }
       }
       
-      return verses;
+      if (verses.length > 0) {
+        return verses;
+      }
     }
     
-    // Handle plain text format (fallback)
+    // Handle plain text format
     const lines = chapterText.split('\n').filter(line => line.trim());
     const verses: Verse[] = [];
     
     for (const line of lines) {
-      // Try to extract verse number and text
       const match = line.match(/^(\d+)\s+(.+)$/);
       if (match) {
         const verseNum = parseInt(match[1], 10);
@@ -53,7 +71,6 @@ export const parseChapterText = (chapterText: string): Verse[] => {
       }
     }
     
-    // If no verses found with any format, create a single verse
     if (verses.length === 0 && chapterText.trim()) {
       verses.push({ verse: 1, text: chapterText.trim() });
     }
@@ -63,15 +80,12 @@ export const parseChapterText = (chapterText: string): Verse[] => {
     console.error('Error parsing chapter text:', error);
     return [];
   }
-};import { bibleText as initialBibleText } from './bibleText';
-import { BIBLE_VERSIONS, BibleVersion } from './bibleVersions';
-import { BIBLE_BOOKS_LIST } from './bibleBooks';
+};
 
-const BIBLE_TEXT_KEY = 'behold-bible-text-v1';
+const BIBLE_TEXT_KEY = 'gethsemane-bible-text-v1';
 
 type BibleData = { [version: string]: { [book: string]: { [chapter: number]: string } } };
 
-// Book mapping for scripture.api.bible format (OSIS standard)
 const BOOK_MAPPING: { [key: string]: string } = {
   'Genesis': 'GEN',
   'Exodus': 'EXO',
@@ -141,13 +155,12 @@ const BOOK_MAPPING: { [key: string]: string } = {
   'Revelation': 'REV'
 };
 
-// Versions served from bundled files in public/bible/<version>/ instead of the external API
 const LOCAL_BIBLE_VERSIONS = new Set(['AMP', 'NLT', 'KJV']);
 const localBookCache: { [key: string]: { [chapter: string]: string } } = {};
 
 const getLocalChapterText = async (version: string, book: string, chapter: number): Promise<string> => {
   const fileName = book.toLowerCase().replace(/\s+/g, '-');
-  const cacheKey = `${version}/${fileName}`;
+  const cacheKey = `${version.toUpperCase()}/${fileName}`;
 
   let bookData = localBookCache[cacheKey];
   if (!bookData) {
@@ -166,9 +179,9 @@ const getLocalChapterText = async (version: string, book: string, chapter: numbe
   return text;
 };
 
-// New async function for dynamic chapter loading
 export const getChapterText = async (version: string, book: string, chapter: number): Promise<string> => {
-  if (LOCAL_BIBLE_VERSIONS.has(version.toUpperCase())) {
+  const verUpper = version.toUpperCase();
+  if (LOCAL_BIBLE_VERSIONS.has(verUpper)) {
     try {
       return await getLocalChapterText(version, book, chapter);
     } catch (error) {
@@ -178,56 +191,37 @@ export const getChapterText = async (version: string, book: string, chapter: num
   }
 
   const key = `bible-chapter-${version}-${book}-${chapter}`;
-  console.log(`Loading chapter: ${version} ${book} ${chapter}`);
-  
   try {
     const stored = localStorage.getItem(key);
     if (stored) {
-      console.log('Found cached chapter text');
       return stored;
     }
   } catch (e) {
     console.error('Error accessing localStorage:', e);
   }
 
-  const versionObj = BIBLE_VERSIONS.find(v => v.short.toUpperCase() === version.toUpperCase());
+  const versionObj = BIBLE_VERSIONS.find(v => v.short.toUpperCase() === verUpper);
   if (!versionObj) {
-    throw new Error(`Unsupported Bible version: ${version}`);
+    return 'Unsupported Bible version.';
   }
   const bibleId = versionObj.id;
-
-  // Map book name to OSIS format
   const bookId = BOOK_MAPPING[book];
   if (!bookId) {
-    console.error(`Book mapping not found for: ${book}`);
     return 'Bible text not available. Book mapping error.';
   }
   
   const chapterId = `${bookId}.${chapter}`;
-
   const apiKey = import.meta.env.VITE_BIBLE_API_KEY;
-  console.log('API Key available:', !!apiKey);
   if (!apiKey) {
-    console.error('Missing VITE_BIBLE_API_KEY environment variable');
     return 'Bible text not available. API key missing.';
   }
 
   const url = `https://api.scripture.api.bible/v1/bibles/${bibleId}/chapters/${chapterId}?content-type=text`;
-  console.log('Fetching from:', url);
-
   try {
     const response = await fetch(url, { headers: { accept: 'application/json', 'api-key': apiKey } });
-    console.log('Response status:', response.status);
-    
-    if (response.status === 403) {
-      console.error('API key is invalid or rate limited');
-      return 'Bible text not available. API key issue.';
-    }
-    
     if (!response.ok) {
       throw new Error(`Failed to fetch chapter: ${response.statusText}`);
     }
-    
     const data = await response.json();
     const formatted = data.data.content;
     localStorage.setItem(key, formatted);
@@ -238,43 +232,84 @@ export const getChapterText = async (version: string, book: string, chapter: num
   }
 };
 
-const bundledBibleText: BibleData = initialBibleText;
+/**
+ * Search the full 66 books of the Bible for a given version.
+ */
+export const searchFullBible = async (
+  version: string,
+  query: string
+): Promise<BibleSearchResult[]> => {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
 
+  const results: BibleSearchResult[] = [];
+  const normalizedVersion = version.toUpperCase();
+
+  for (const book of BIBLE_BOOKS_LIST) {
+    const fileName = book.toLowerCase().replace(/\s+/g, '-');
+    const cacheKey = `${normalizedVersion}/${fileName}`;
+
+    let bookData = localBookCache[cacheKey];
+    if (!bookData) {
+      try {
+        const response = await fetch(`/bible/${normalizedVersion.toLowerCase()}/${fileName}.json`);
+        if (response.ok) {
+          bookData = await response.json();
+          localBookCache[cacheKey] = bookData;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    if (!bookData) continue;
+
+    for (const chapterStr in bookData) {
+      const chapterText = bookData[chapterStr];
+      if (chapterText && typeof chapterText === 'string' && chapterText.toLowerCase().includes(q)) {
+        const verses = parseChapterText(chapterText);
+        for (const verse of verses) {
+          if (verse.text && verse.text.toLowerCase().includes(q)) {
+            results.push({
+              version: normalizedVersion,
+              book,
+              chapter: parseInt(chapterStr, 10),
+              verse: String(verse.verse),
+              text: verse.text,
+            });
+            if (results.length >= 250) {
+              return results;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return results;
+};
+
+const bundledBibleText: BibleData = initialBibleText;
 let inMemoryCache: BibleData | null = null;
 
-// Function to get the bible data, preferring in-memory, then localStorage, then bundled.
-// It also populates localStorage if it's empty.
 export const getBibleText = (): BibleData => {
-    // 1. Check in-memory cache first for performance
-    if (inMemoryCache) {
-        return inMemoryCache;
-    }
+  if (inMemoryCache) {
+    return inMemoryCache;
+  }
 
-    // 2. Check localStorage
-    try {
-        const storedText = window.localStorage.getItem(BIBLE_TEXT_KEY);
-        if (storedText) {
-            const parsedText = JSON.parse(storedText);
-            // Simple validation to ensure it's not empty/corrupted
-            if (Object.keys(parsedText).length > 0) {
-                inMemoryCache = parsedText;
-                return parsedText;
-            }
-        }
-    } catch (error) {
-        console.error("Error reading bible text from localStorage:", error);
+  try {
+    const storedText = window.localStorage.getItem(BIBLE_TEXT_KEY);
+    if (storedText) {
+      const parsedText = JSON.parse(storedText);
+      if (Object.keys(parsedText).length > 0) {
+        inMemoryCache = parsedText;
+        return parsedText;
+      }
     }
+  } catch (error) {
+    console.error("Error reading bible text from localStorage:", error);
+  }
 
-    // 3. If not in localStorage or stored data is invalid, use bundled data and store it
-    try {
-        // Note: This might be slow on first load and could fail if bibleText is too large for localStorage.
-        window.localStorage.setItem(BIBLE_TEXT_KEY, JSON.stringify(bundledBibleText));
-        inMemoryCache = bundledBibleText;
-        return bundledBibleText;
-    } catch (error) {
-        console.error("Error storing bible text to localStorage:", error);
-        // If storing fails (e.g., storage full), just return the bundled text for this session.
-        inMemoryCache = bundledBibleText;
-        return bundledBibleText;
-    }
+  inMemoryCache = bundledBibleText;
+  return bundledBibleText;
 };

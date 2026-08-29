@@ -1,15 +1,24 @@
 /**
  * Dynamic API Base URL resolver.
- * Handles localhost, LAN IP testing (e.g. 10.223.169.5 on mobile), and production domains.
+ * Supports VITE_ROOTED_API_URL, VITE_API_BASE_URL, and VITE_BACKEND_URL with
+ * automatic sanitization (removes trailing slashes, appends /api/v1 if omitted).
  */
 export const getApiBaseUrl = (): string => {
-  if (import.meta.env.VITE_ROOTED_API_URL) {
-    return import.meta.env.VITE_ROOTED_API_URL;
+  const rawUrl =
+    import.meta.env.VITE_ROOTED_API_URL ||
+    import.meta.env.VITE_API_BASE_URL ||
+    import.meta.env.VITE_BACKEND_URL;
+
+  if (rawUrl && typeof rawUrl === 'string' && rawUrl.trim() !== '') {
+    const trimmed = rawUrl.trim().replace(/\/+$/, '');
+    return trimmed.endsWith('/api/v1') ? trimmed : `${trimmed}/api/v1`;
   }
+
   if (typeof window !== 'undefined' && window.location && window.location.hostname) {
     const protocol = window.location.protocol;
     const hostname = window.location.hostname;
     return `${protocol}//${hostname}:8000/api/v1`;
   }
+
   return 'http://localhost:8000/api/v1';
 };
