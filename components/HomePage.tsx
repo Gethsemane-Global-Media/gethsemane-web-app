@@ -13,7 +13,17 @@ interface AnnouncementItem {
   content: string;
   badge_text?: string;
   action_url?: string;
+  target_scope?: string;
   published_at: string;
+}
+
+interface LiveStreamInfo {
+  video_id: string;
+  title: string;
+  content?: string;
+  video_url: string;
+  channel_id?: string;
+  started_at?: string;
 }
 
 interface HomePageProps {
@@ -77,6 +87,7 @@ const HomePage: React.FC<HomePageProps> = ({
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
+  const [liveStream, setLiveStream] = useState<LiveStreamInfo | null>(null);
 
   const API_BASE_URL = getApiBaseUrl();
 
@@ -86,7 +97,12 @@ const HomePage: React.FC<HomePageProps> = ({
         const res = await fetch(`${API_BASE_URL}/community/announcements`);
         if (res.ok) {
           const data = await res.json();
-          setAnnouncements(data);
+          if (Array.isArray(data)) {
+            setAnnouncements(data);
+          } else if (data && typeof data === 'object') {
+            setLiveStream(data.live_stream || null);
+            setAnnouncements(data.announcements || []);
+          }
         }
       } catch (err) {
         console.warn('Failed to load community bulletins:', err);
@@ -304,7 +320,71 @@ const HomePage: React.FC<HomePageProps> = ({
     </section>
   );
 
-  const announcementsSection = announcements.length > 0 ? (
+  const liveStreamSection = liveStream ? (
+    <section className="mt-6 mb-3">
+      <div className="rounded-3xl bg-gradient-to-br from-red-950 via-neutral-900 to-black border-2 border-red-600/40 p-5 text-white shadow-2xl overflow-hidden relative">
+        {/* Live indicator badge */}
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-red-600 text-white tracking-wider animate-pulse shadow-md">
+            <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+            LIVE NOW
+          </span>
+          <span className="text-[11px] font-medium text-red-200/80 bg-red-950/60 px-2.5 py-0.5 rounded-full border border-red-500/20">
+            Gethsemane Online
+          </span>
+        </div>
+
+        <h3 className="text-lg font-bold text-white mt-2 leading-snug">
+          {liveStream.title}
+        </h3>
+
+        {liveStream.content && (
+          <p className="text-xs text-neutral-300 mt-1 leading-relaxed line-clamp-2">
+            {liveStream.content}
+          </p>
+        )}
+
+        {/* Embedded YouTube Player */}
+        <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black my-3.5 border border-red-500/30">
+          <iframe
+            src={`https://www.youtube.com/embed/${liveStream.video_id}?autoplay=0&rel=0&modestbranding=1`}
+            title={liveStream.title}
+            className="absolute inset-0 w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+
+        {/* Action button */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/10">
+          <a
+            href={liveStream.video_url || `https://www.youtube.com/watch?v=${liveStream.video_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md transition-all cursor-pointer"
+          >
+            Watch on YouTube
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+          <span className="text-[11px] text-neutral-400">Join the live ministration</span>
+        </div>
+      </div>
+    </section>
+  ) : null;
+
+  // Filter out any manual announcement that is already shown as the liveStream
+  const generalAnnouncements = announcements.filter((item) => {
+    if (liveStream && liveStream.video_id && item.action_url?.includes(liveStream.video_id)) {
+      return false;
+    }
+    const isLive = (item.badge_text || '').toLowerCase() === 'live' || (item.target_scope || '').toLowerCase() === 'live';
+    if (liveStream && isLive) return false;
+    return true;
+  });
+
+  const announcementsSection = generalAnnouncements.length > 0 ? (
     <section className="mt-6 mb-2">
       <div className="rounded-3xl bg-gradient-to-r from-neutral-900 via-indigo-950 to-neutral-900 border border-indigo-500/30 p-5 text-white shadow-xl">
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -312,25 +392,25 @@ const HomePage: React.FC<HomePageProps> = ({
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
             </svg>
-            {announcements[0].badge_text || 'Ministry Bulletin'}
+            {generalAnnouncements[0].badge_text || 'Ministry Bulletin'}
           </span>
           <span className="text-[11px] text-neutral-400">
-            {formatDisplayDate(announcements[0].published_at)}
+            {formatDisplayDate(generalAnnouncements[0].published_at)}
           </span>
         </div>
 
         <h4 className="text-base font-bold text-white mt-1">
-          {announcements[0].title}
+          {generalAnnouncements[0].title}
         </h4>
 
         <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
-          {announcements[0].content}
+          {generalAnnouncements[0].content}
         </p>
 
         <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-white/10">
-          {announcements[0].action_url ? (
+          {generalAnnouncements[0].action_url ? (
             <a
-              href={announcements[0].action_url}
+              href={generalAnnouncements[0].action_url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all cursor-pointer"
@@ -430,6 +510,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </section>
           )}
 
+          {liveStreamSection}
           {announcementsSection}
           {ministryHubSection}
           {doYouKnowSection}
@@ -444,6 +525,7 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
            </section>
            
+           {liveStreamSection}
            {announcementsSection}
            {ministryHubSection}
            {doYouKnowSection}
