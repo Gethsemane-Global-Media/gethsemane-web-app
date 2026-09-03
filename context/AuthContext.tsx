@@ -8,6 +8,7 @@ import {
 } from '../services/authService';
 
 export interface UserProfileState {
+  id?: number;
   userId?: number;
   name: string;
   email?: string;
@@ -47,7 +48,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (stored) {
           const parsed = JSON.parse(stored);
           if (parsed && parsed.name) {
-            setUser(parsed);
+            setUser({
+              ...parsed,
+              id: parsed.id ?? parsed.userId,
+              userId: parsed.userId ?? parsed.id,
+            });
           }
         }
       } catch (err) {
@@ -63,7 +68,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (e.key === 'userProfile') {
         if (e.newValue) {
           try {
-            setUser(JSON.parse(e.newValue));
+            const parsed = JSON.parse(e.newValue);
+            setUser({
+              ...parsed,
+              id: parsed.id ?? parsed.userId,
+              userId: parsed.userId ?? parsed.id,
+            });
           } catch {}
         } else {
           setUser(null);
@@ -86,6 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const transformUserToProfile = (authUser: AuthUser): UserProfileState => {
     return {
+      id: authUser.id,
       userId: authUser.id,
       name: authUser.name,
       email: authUser.email,

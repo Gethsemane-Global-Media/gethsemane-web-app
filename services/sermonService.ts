@@ -191,17 +191,16 @@ export const toggleSermonCompleted = async (
   // 2. Async backend sync if user is authenticated
   if (userId) {
     try {
-      await fetch(`${API_BASE_URL}/sermons/${sermonId}/progress`, {
+      await fetch(`${API_BASE_URL}/sermons/${sermonId}/mark-listened`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({
           user_id: userId,
-          is_completed: newState,
-          played_seconds: newState ? 100 : 0,
+          is_listened: newState,
         }),
       });
     } catch (err) {
-      console.warn('Failed to sync toggle to backend API:', err);
+      console.warn('Failed to sync mark-listened toggle to backend API:', err);
     }
   }
 

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useUserProfile } from '../hooks/useUserProfile';
+import { useAuth } from '../context/AuthContext';
 import { getApiBaseUrl } from '../utils/apiConfig';
-import { Sermon, SermonPlayerModal } from './SermonPlayerModal';
+import { Sermon, fetchSermons, getLocalSermonProgressMap } from '../services/sermonService';
+import { SermonPlayerModal } from './SermonPlayerModal';
 
 interface SermonProgressItem {
   id: number;
@@ -16,6 +18,7 @@ interface SermonProgressItem {
 
 export const MessageTrackerPage: React.FC<{ onNavigateBack?: () => void }> = ({ onNavigateBack }) => {
   const [profile] = useUserProfile();
+  const { user } = useAuth();
   const [progressItems, setProgressItems] = useState<SermonProgressItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSermon, setActiveSermon] = useState<Sermon | null>(null);
@@ -24,25 +27,69 @@ export const MessageTrackerPage: React.FC<{ onNavigateBack?: () => void }> = ({ 
 
   useEffect(() => {
     const fetchUserProgress = async () => {
-      if (!profile.userId) {
-        setLoading(false);
-        return;
-      }
+      const activeUserId = user?.id ?? user?.userId ?? profile?.userId ?? profile?.id;
+      const localMap = getLocalSermonProgressMap();
+
       try {
-        const res = await fetch(`${API_BASE_URL}/users/${profile.userId}/sermon-progress`);
-        if (res.ok) {
-          const data = await res.json();
-          setProgressItems(data);
+        // 1. Fetch available sermons to resolve titles & metadata for local IDs
+        const allSermonsRes = await fetchSermons({ per_page: 500 });
+        const sermonsList = allSermonsRes.data || [];
+        const sermonMap = new Map<number, Sermon>(sermonsList.map((s) => [s.id, s]));
+
+        let remoteItems: SermonProgressItem[] = [];
+        if (activeUserId) {
+          try {
+            const res = await fetch(`${API_BASE_URL}/users/${activeUserId}/sermon-progress`);
+            if (res.ok) {
+              remoteItems = await res.json();
+            }
+          } catch (e) {
+            console.warn('Remote sermon progress fetch failed, falling back to local map:', e);
+          }
         }
+
+        // 2. Merge remote records + local storage records
+        const mergedMap = new Map<number, SermonProgressItem>();
+
+        remoteItems.forEach((item) => {
+          const matchedSermon = item.sermon || sermonMap.get(item.sermon_id);
+          if (matchedSermon) {
+            mergedMap.set(item.sermon_id, {
+              ...item,
+              sermon: matchedSermon,
+            });
+          }
+        });
+
+        Object.keys(localMap).forEach((idStr) => {
+          const sId = parseInt(idStr, 10);
+          if (localMap[sId] && !mergedMap.has(sId)) {
+            const matchedSermon = sermonMap.get(sId);
+            if (matchedSermon) {
+              mergedMap.set(sId, {
+                id: sId,
+                user_id: activeUserId || 0,
+                sermon_id: sId,
+                played_seconds: 3600,
+                total_seconds: 3600,
+                is_completed: true,
+                last_played_at: new Date().toISOString(),
+                sermon: matchedSermon,
+              });
+            }
+          }
+        });
+
+        setProgressItems(Array.from(mergedMap.values()));
       } catch (err) {
-        console.warn('Could not fetch remote sermon progress:', err);
+        console.warn('Could not load sermon progress items:', err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserProgress();
-  }, [profile.userId]);
+  }, [user?.id, user?.userId, profile?.userId, profile?.id]);
 
   const totalPlayedSeconds = progressItems.reduce((acc, curr) => acc + (curr.played_seconds || 0), 0);
   const totalHours = (totalPlayedSeconds / 3600).toFixed(1);

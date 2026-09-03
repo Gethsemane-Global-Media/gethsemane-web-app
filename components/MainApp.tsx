@@ -142,8 +142,57 @@ const generateReadingSchedule = (plan: Plan): string[] => {
     return schedule;
 };
 
+const viewFromHash = (): AppView => {
+  const hash = window.location.hash.replace('#/', '').replace('#', '').split('?')[0];
+  switch (hash) {
+    case 'bible': return 'bible';
+    case 'sermons': return 'sermons';
+    case 'sermons/detail':
+    case 'sermon-detail': return 'sermonDetail';
+    case 'message-tracker': return 'messageTracker';
+    case 'announcements': return 'announcements';
+    case 'discipleship': return 'discipleship';
+    case 'giving': return 'giving';
+    case 'plans':
+    case 'plan': return 'plan';
+    case 'settings': return 'settings';
+    case 'profile':
+    case 'editProfile': return 'editProfile';
+    case 'notifications-settings': return 'notificationSettings';
+    case 'create-plan': return 'createPlan';
+    case 'plan-detail': return 'planDetail';
+    case 'calendar': return 'calendar';
+    case 'reading-completed': return 'readingCompleted';
+    case 'bookmarks': return 'bookmarks';
+    default: return 'home';
+  }
+};
+
+const hashFromView = (view: AppView): string => {
+  switch (view) {
+    case 'home': return '#/';
+    case 'bible': return '#/bible';
+    case 'sermons': return '#/sermons';
+    case 'sermonDetail': return '#/sermons/detail';
+    case 'messageTracker': return '#/message-tracker';
+    case 'announcements': return '#/announcements';
+    case 'discipleship': return '#/discipleship';
+    case 'giving': return '#/giving';
+    case 'plan': return '#/plans';
+    case 'settings': return '#/settings';
+    case 'editProfile': return '#/profile';
+    case 'notificationSettings': return '#/notifications-settings';
+    case 'createPlan': return '#/create-plan';
+    case 'planDetail': return '#/plan-detail';
+    case 'calendar': return '#/calendar';
+    case 'readingCompleted': return '#/reading-completed';
+    case 'bookmarks': return '#/bookmarks';
+    default: return '#/';
+  }
+};
+
 const MainApp: React.FC = () => {
-  const [currentView, setCurrentView] = useState<AppView>('home');
+  const [currentView, setCurrentView] = useState<AppView>(viewFromHash);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [userPlans, setUserPlans] = useState<Plan[]>(() => {
     try {
@@ -166,6 +215,21 @@ const MainApp: React.FC = () => {
   const [planReadingSession, setPlanReadingSession] = useState<PlanReadingSession | null>(null);
   const [isDailyTaskCompleted, setIsDailyTaskCompleted] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState(getStoredNotificationSettings);
+
+  // Sync browser Back/Forward navigation with active view
+  useEffect(() => {
+    const handleHashChange = () => {
+      const newView = viewFromHash();
+      setCurrentView(newView);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
+  }, []);
 
   const activePlan = useMemo(() => {
     return userPlans
@@ -268,6 +332,11 @@ const MainApp: React.FC = () => {
       setIsCreatePlanDirty(false);
     }
     setCurrentView(targetView);
+
+    const targetHash = hashFromView(targetView);
+    if (window.location.hash !== targetHash) {
+      window.history.pushState(null, '', targetHash);
+    }
   };
 
 

@@ -30,11 +30,13 @@ export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) =>
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  const activeUserId = user?.id ?? user?.userId;
+
   // Periodically sync progress telemetry to backend API
   useEffect(() => {
     // Record initial view event
     recordSermonProgress(sermon.id, {
-      user_id: user?.id,
+      user_id: activeUserId,
       media_type: activeTab,
       current_time_seconds: 0,
       completed: isCompleted,
@@ -47,7 +49,7 @@ export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) =>
         const percent = Math.floor((currentTime / duration) * 100);
 
         recordSermonProgress(sermon.id, {
-          user_id: user?.id,
+          user_id: activeUserId,
           media_type: 'audio',
           current_time_seconds: currentTime,
           duration_seconds: duration,
@@ -61,10 +63,10 @@ export const SermonDetailPage: React.FC<Props> = ({ sermon, onNavigateBack }) =>
     }, 15000); // sync every 15 seconds
 
     return () => clearInterval(interval);
-  }, [sermon.id, activeTab, user?.id, isCompleted]);
+  }, [sermon.id, activeTab, activeUserId, isCompleted]);
 
   const handleToggleListened = async () => {
-    const newState = await toggleSermonCompleted(sermon.id, user?.id);
+    const newState = await toggleSermonCompleted(sermon.id, activeUserId);
     setIsCompleted(newState);
   };
 

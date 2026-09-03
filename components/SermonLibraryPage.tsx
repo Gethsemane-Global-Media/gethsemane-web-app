@@ -51,13 +51,15 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
   const [selectedSeries, setSelectedSeries] = useState<string>('all');
   const [mediaFilter, setMediaFilter] = useState<'all' | 'unread' | 'listened' | 'video' | 'audio'>('all');
 
+  const activeUserId = user?.id ?? user?.userId;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [sermonRes, seriesRes, userProgress] = await Promise.all([
           getSermons({ per_page: 500 }),
           getSermonSeries(),
-          fetchUserSermonProgress(user?.id),
+          fetchUserSermonProgress(activeUserId),
         ]);
 
         const incomingSermons = sermonRes.data || [];
@@ -80,11 +82,11 @@ export const SermonLibraryPage: React.FC<Props> = ({ onNavigateToTracker, onSele
     };
 
     fetchData();
-  }, [user?.id]);
+  }, [activeUserId]);
 
   const handleToggleListened = async (sermonId: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    const newState = await toggleSermonCompleted(sermonId, user?.id);
+    const newState = await toggleSermonCompleted(sermonId, activeUserId);
     setProgressMap((prev) => ({
       ...prev,
       [sermonId]: newState,

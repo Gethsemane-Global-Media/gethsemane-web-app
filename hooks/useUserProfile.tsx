@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 
 export interface UserProfile {
+  id?: number;
   userId?: number;
   name: string;
   email?: string;
@@ -25,6 +26,7 @@ const DEFAULT_AVATAR =
   'https://images.pexels.com/photos/3760263/pexels-photo-3760263.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2';
 
 export const defaultProfile: UserProfile = {
+  id: undefined,
   userId: undefined,
   name: 'Precious Ocg',
   email: 'precious@gkni.org',
@@ -48,6 +50,8 @@ const loadProfile = (): UserProfile => {
       return {
         ...defaultProfile,
         ...parsed,
+        id: parsed.id ?? parsed.userId,
+        userId: parsed.userId ?? parsed.id,
         avatarUrl: parsed.avatarUrl || DEFAULT_AVATAR,
       };
     }
