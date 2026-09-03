@@ -4,6 +4,8 @@ import { Plan } from '../types';
 import { BIBLE_CHAPTERS } from '../data/bibleBooks';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { RefreshIcon } from './icons/RefreshIcon';
+import { TelegramIcon, YouTubeIcon, FacebookIcon, InstagramIcon } from './icons/SocialIcons';
+import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { formatDisplayDate } from '../utils/dateUtils';
 import { getApiBaseUrl } from '../utils/apiConfig';
 
@@ -437,6 +439,79 @@ const HomePage: React.FC<HomePageProps> = ({
     </section>
   ) : null;
 
+  const officialChannelsSection = (
+    <section className="mt-8 mb-2">
+      <div className="rounded-3xl bg-white border border-gray-200/80 p-5 shadow-xs">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-green/10 text-brand-green text-[10px] font-bold uppercase tracking-wider">
+            Official Channels
+          </span>
+          <span className="text-[11px] text-gray-400 font-medium">Gethsemane Media</span>
+        </div>
+
+        <h3 className="text-sm font-bold text-brand-dark">Gethsemane Kingdom Network International</h3>
+        <p className="text-xs text-brand-secondary mt-0.5 mb-3.5 leading-relaxed">
+          Follow daily audio teachings, livestream ministrations, and reach our official ministry line.
+        </p>
+
+        <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+          <a
+            href="https://t.me/GKNI_Official"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-2.5 rounded-2xl bg-sky-50/50 border border-sky-200/60 text-sky-800 hover:bg-sky-100/60 transition-colors"
+          >
+            <TelegramIcon size={16} className="text-sky-500 shrink-0" />
+            <span className="truncate">Telegram</span>
+          </a>
+
+          <a
+            href="https://youtube.com/@GKNIOfficial"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-2.5 rounded-2xl bg-red-50/50 border border-red-200/60 text-red-800 hover:bg-red-100/60 transition-colors"
+          >
+            <YouTubeIcon size={16} className="text-red-500 shrink-0" />
+            <span className="truncate">YouTube</span>
+          </a>
+
+          <a
+            href="https://www.facebook.com/GKNIOfficial"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 p-2.5 rounded-2xl bg-blue-50/50 border border-blue-200/60 text-blue-800 hover:bg-blue-100/60 transition-colors"
+          >
+            <FacebookIcon size={16} className="text-blue-600 shrink-0" />
+            <span className="truncate">Facebook</span>
+          </a>
+
+          <a
+            href="https://www.instagram.com/gkni.official"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-pink-50/50 border border-pink-200/60 text-pink-800 hover:bg-pink-100/60 transition-colors"
+          >
+            <InstagramIcon size={16} className="text-pink-600 shrink-0" />
+            <span className="truncate">Instagram</span>
+          </a>
+
+          <a
+            href="https://wa.me/2349034694585"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="col-span-2 flex items-center gap-2.5 p-2.5 rounded-2xl bg-emerald-50/60 border border-emerald-300 text-emerald-800 hover:bg-emerald-100/60 transition-colors"
+          >
+            <WhatsAppIcon size={16} className="text-emerald-600 shrink-0" />
+            <div className="min-w-0 flex-1 truncate">
+              <span className="font-bold">Official WhatsApp: </span>
+              <span className="font-normal text-[11px]">+234 903 469 4585</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+
   const todaysTaskSection = planDetails ? (
     <section className="mt-8 pb-24">
       <h3 className="text-base font-medium text-brand-primary">Today&apos;s task</h3>
@@ -513,6 +588,7 @@ const HomePage: React.FC<HomePageProps> = ({
           {liveStreamSection}
           {announcementsSection}
           {ministryHubSection}
+          {officialChannelsSection}
           {doYouKnowSection}
           {todaysTaskSection}
         </>
@@ -528,6 +604,7 @@ const HomePage: React.FC<HomePageProps> = ({
            {liveStreamSection}
            {announcementsSection}
            {ministryHubSection}
+           {officialChannelsSection}
            {doYouKnowSection}
             
             <section className="mt-8 pb-24">

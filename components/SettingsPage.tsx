@@ -3,6 +3,8 @@ import { PlusCircleIcon } from './icons/PlusCircleIcon';
 import { PlayCircleIcon } from './icons/PlayCircleIcon';
 import { NotificationIcon } from './icons/NotificationIcon';
 import { ShareIcon } from './icons/ShareIcon';
+import { TelegramIcon, YouTubeIcon, FacebookIcon, InstagramIcon } from './icons/SocialIcons';
+import { WhatsAppIcon } from './icons/WhatsAppIcon';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAuth } from '../context/AuthContext';
 import ShareModal from './ShareModal';
@@ -86,12 +88,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
           </div>
         </section>
 
-        <section className="mt-12 space-y-7">
+        <section className="mt-10 space-y-6">
           {settingsItems.map((item) => (
             <button
               key={item.label}
               onClick={item.onClick}
-              className="flex items-center w-full text-left gap-4 text-brand-dark text-lg hover:text-brand-accent transition-colors cursor-pointer"
+              className="flex items-center w-full text-left gap-4 text-brand-dark text-base sm:text-lg hover:text-brand-accent transition-colors cursor-pointer"
             >
               <span className="text-brand-primary shrink-0">{item.icon}</span>
               <span>{item.label}</span>
@@ -100,7 +102,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
           <button
             onClick={logout}
-            className="flex items-center w-full text-left gap-4 text-red-600 text-lg hover:opacity-80 transition-opacity cursor-pointer"
+            className="flex items-center w-full text-left gap-4 text-red-600 text-base sm:text-lg hover:opacity-80 transition-opacity cursor-pointer"
           >
             <span className="shrink-0">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +113,87 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
           </button>
         </section>
 
-        <section className="mt-12 pt-6 text-center">
+        {/* Official Ministry Social & Broadcast Channels */}
+        <section className="mt-10 rounded-3xl bg-brand-bg/60 border border-gray-200/80 p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-green/10 text-brand-green text-[10px] font-bold uppercase tracking-wider">
+              Official Media
+            </span>
+          </div>
+          <h2 className="text-sm font-bold text-brand-dark">Gethsemane Kingdom Network International</h2>
+          <p className="text-xs text-brand-secondary mt-0.5 mb-4 leading-relaxed">
+            Stay connected with audio broadcasts, livestream services, and official ministry lines.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs font-semibold">
+            <a
+              href="https://t.me/GKNI_Official"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-gray-200 text-sky-700 hover:border-sky-300 hover:bg-sky-50/50 shadow-xs transition-all"
+            >
+              <TelegramIcon size={18} className="text-sky-500 shrink-0" />
+              <div className="min-w-0 flex-1 truncate">
+                <div className="truncate">Telegram Channel</div>
+                <div className="text-[10px] text-gray-400 font-normal truncate">@GKNI_Official</div>
+              </div>
+            </a>
+
+            <a
+              href="https://youtube.com/@GKNIOfficial"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-gray-200 text-red-600 hover:border-red-300 hover:bg-red-50/50 shadow-xs transition-all"
+            >
+              <YouTubeIcon size={18} className="text-red-500 shrink-0" />
+              <div className="min-w-0 flex-1 truncate">
+                <div className="truncate">YouTube Official</div>
+                <div className="text-[10px] text-gray-400 font-normal truncate">@GKNIOfficial</div>
+              </div>
+            </a>
+
+            <a
+              href="https://www.facebook.com/GKNIOfficial"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-gray-200 text-blue-700 hover:border-blue-300 hover:bg-blue-50/50 shadow-xs transition-all"
+            >
+              <FacebookIcon size={18} className="text-blue-600 shrink-0" />
+              <div className="min-w-0 flex-1 truncate">
+                <div className="truncate">Facebook Page</div>
+                <div className="text-[10px] text-gray-400 font-normal truncate">/GKNIOfficial</div>
+              </div>
+            </a>
+
+            <a
+              href="https://www.instagram.com/gkni.official"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-gray-200 text-pink-700 hover:border-pink-300 hover:bg-pink-50/50 shadow-xs transition-all"
+            >
+              <InstagramIcon size={18} className="text-pink-600 shrink-0" />
+              <div className="min-w-0 flex-1 truncate">
+                <div className="truncate">Instagram Handle</div>
+                <div className="text-[10px] text-gray-400 font-normal truncate">@gkni.official</div>
+              </div>
+            </a>
+
+            <a
+              href="https://wa.me/2349034694585"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="col-span-1 sm:col-span-2 flex items-center gap-2.5 p-3 rounded-2xl bg-white border border-emerald-300 text-emerald-800 hover:bg-emerald-50/60 shadow-xs transition-all"
+            >
+              <WhatsAppIcon size={18} className="text-emerald-600 shrink-0" />
+              <div className="min-w-0 flex-1 truncate">
+                <div className="truncate">Official WhatsApp Helpline</div>
+                <div className="text-[10px] text-emerald-600 font-normal truncate">+234 903 469 4585</div>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section className="mt-8 pt-4 text-center">
           <button
             onClick={handleShare}
             className="inline-flex items-center justify-center gap-3 text-brand-accent font-semibold hover:underline cursor-pointer"
