@@ -90,8 +90,46 @@ const HomePage: React.FC<HomePageProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [liveStream, setLiveStream] = useState<LiveStreamInfo | null>(null);
+  const [streamSwappedNotice, setStreamSwappedNotice] = useState<string | null>(null);
+  const [isRefreshingLive, setIsRefreshingLive] = useState(false);
 
   const API_BASE_URL = getApiBaseUrl();
+
+  // Periodic polling for active YouTube Live broadcast & automatic stream cut recovery
+  const fetchActiveLiveStream = async (showRefreshIndicator = false) => {
+    try {
+      if (showRefreshIndicator) setIsRefreshingLive(true);
+      const res = await fetch(`${API_BASE_URL}/community/live-stream`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.is_live && data.video_id) {
+          setLiveStream((prev) => {
+            // If the stream link changed (e.g. pastor restarted broadcast due to network cut)
+            if (prev && prev.video_id && prev.video_id !== data.video_id) {
+              setStreamSwappedNotice(`Live stream updated to current feed: ${data.title}`);
+              setTimeout(() => setStreamSwappedNotice(null), 9000);
+            }
+            return data;
+          });
+        } else {
+          setLiveStream(null);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not refresh live stream status:', err);
+    } finally {
+      if (showRefreshIndicator) setIsRefreshingLive(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchActiveLiveStream();
+    const interval = setInterval(() => {
+      fetchActiveLiveStream();
+    }, 25000);
+
+    return () => clearInterval(interval);
+  }, [API_BASE_URL]);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
@@ -102,7 +140,6 @@ const HomePage: React.FC<HomePageProps> = ({
           if (Array.isArray(data)) {
             setAnnouncements(data);
           } else if (data && typeof data === 'object') {
-            setLiveStream(data.live_stream || null);
             setAnnouncements(data.announcements || []);
           }
         }
@@ -112,7 +149,7 @@ const HomePage: React.FC<HomePageProps> = ({
     };
 
     fetchAnnouncements();
-  }, []);
+  }, [API_BASE_URL]);
 
   const currentDate = useMemo(() => new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -325,15 +362,37 @@ const HomePage: React.FC<HomePageProps> = ({
   const liveStreamSection = liveStream ? (
     <section className="mt-6 mb-3">
       <div className="rounded-3xl bg-gradient-to-br from-red-950 via-neutral-900 to-black border-2 border-red-600/40 p-5 text-white shadow-2xl overflow-hidden relative">
+        {/* Stream Swapped Dynamic Alert */}
+        {streamSwappedNotice && (
+          <div className="mb-3 p-3 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
+            <svg className="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>{streamSwappedNotice}</span>
+          </div>
+        )}
+
         {/* Live indicator badge */}
         <div className="flex items-center justify-between gap-2 mb-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-red-600 text-white tracking-wider animate-pulse shadow-md">
             <span className="w-2 h-2 rounded-full bg-white animate-ping" />
             LIVE NOW
           </span>
-          <span className="text-[11px] font-medium text-red-200/80 bg-red-950/60 px-2.5 py-0.5 rounded-full border border-red-500/20">
-            Gethsemane Online
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchActiveLiveStream(true)}
+              disabled={isRefreshingLive}
+              title="Refresh live stream feed"
+              className="p-1 rounded-full text-neutral-400 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+            >
+              <svg className={`w-3.5 h-3.5 ${isRefreshingLive ? 'animate-spin text-amber-400' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+            <span className="text-[11px] font-medium text-red-200/80 bg-red-950/60 px-2.5 py-0.5 rounded-full border border-red-500/20">
+              Gethsemane Online
+            </span>
+          </div>
         </div>
 
         <h3 className="text-lg font-bold text-white mt-2 leading-snug">
@@ -349,6 +408,7 @@ const HomePage: React.FC<HomePageProps> = ({
         {/* Embedded YouTube Player */}
         <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black my-3.5 border border-red-500/30">
           <iframe
+            key={liveStream.video_id}
             src={`https://www.youtube.com/embed/${liveStream.video_id}?autoplay=0&rel=0&modestbranding=1`}
             title={liveStream.title}
             className="absolute inset-0 w-full h-full"
