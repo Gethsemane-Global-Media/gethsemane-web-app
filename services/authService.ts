@@ -49,14 +49,26 @@ export const loginWithGoogleApi = async (payload: {
   google_id?: string;
   avatar_url?: string;
 }): Promise<AuthUser> => {
-  const response = await fetch(`${API_BASE_URL}/auth/google`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
+  const baseUrl = getApiBaseUrl();
+  const targetUrl = `${baseUrl}/auth/google`;
+  let response: Response;
+
+  try {
+    response = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (netErr: any) {
+    console.error(`[AuthService] Network failure reaching ${targetUrl}:`, netErr);
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      throw new Error('You appear to be offline. Please check your internet connection.');
+    }
+    throw new Error('Unable to connect to authentication server. Please try again or use web redirect.');
+  }
 
   if (!response.ok) {
     const errData = await response.json().catch(() => ({}));

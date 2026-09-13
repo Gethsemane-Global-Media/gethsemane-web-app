@@ -15,9 +15,21 @@ export const getApiBaseUrl = (): string => {
   }
 
   if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-    const protocol = window.location.protocol;
     const hostname = window.location.hostname;
-    return `${protocol}//${hostname}:8000/api/v1`;
+    const protocol = window.location.protocol;
+
+    // Production domain automatic inference
+    if (hostname.includes('gethsemaneglobal.org')) {
+      return 'https://rooted.gethsemaneglobal.org/api/v1';
+    }
+
+    const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
+    if (isLocal) {
+      return `${protocol}//${hostname}:8000/api/v1`;
+    }
+
+    // Default production fallback (same origin)
+    return `${window.location.origin}/api/v1`;
   }
 
   return 'http://localhost:8000/api/v1';
