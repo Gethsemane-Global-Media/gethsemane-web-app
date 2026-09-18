@@ -571,13 +571,14 @@ const MainApp: React.FC = () => {
     const isSermonSubView = ['messageTracker', 'sermonDetail'].includes(currentView);
     const isActive = currentView === tab || (tab === 'settings' && isSettingsSubView) || (tab === 'plan' && isPlanSubView) || (tab === 'sermons' && isSermonSubView);
     
-    const activeClasses = 'text-brand-accent bg-brand-nav-active-bg font-bold shadow-xs';
-    const inactiveClasses = 'text-brand-inactive hover:text-brand-dark';
+    // Design System Spec Section 4.4: active tab color-accent (or color-primary), inactive color-neutral
+    const activeClasses = 'text-brand-accent bg-brand-nav-active-bg font-semibold';
+    const inactiveClasses = 'text-brand-neutral/70 hover:text-brand-dark';
 
     return (
         <button 
             onClick={() => handleNavigation(tab)}
-            className={`flex flex-col items-center justify-center gap-1 rounded-2xl px-3 py-1.5 transition-all duration-200 cursor-pointer ${isActive ? activeClasses : inactiveClasses}`}
+            className={`flex flex-col items-center justify-center gap-1 rounded-card-md px-3.5 py-1.5 transition-all duration-200 cursor-pointer ${isActive ? activeClasses : inactiveClasses}`}
         >
             {icon}
             <span className="text-[11px] font-medium leading-none">{label}</span>
@@ -662,8 +663,8 @@ const MainApp: React.FC = () => {
 
       {renderContent()}
 
-      <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-brand-bg/95 backdrop-blur-sm border-t border-gray-200/80 z-30">
-          <div className="flex justify-around items-center h-20 px-2">
+      <footer className="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-3 pb-3 z-30">
+          <div className="flex justify-around items-center h-20 px-2 bg-brand-bg/95 backdrop-blur-sm border border-gray-200/80 shadow-md rounded-card-lg">
               <NavButton tab="home" label="Home" icon={<HomeIcon size={20} />} />
               <NavButton tab="bible" label="Bible" icon={<BibleIcon size={20} />} />
               <NavButton tab="sermons" label="Sermons" icon={<MessageIcon className="w-5 h-5" />} />

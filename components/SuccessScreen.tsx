@@ -16,7 +16,7 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({ onNavigateToLogIn }) => {
       <div className="pb-6 pt-8">
         <button
           onClick={onNavigateToLogIn}
-          className="w-full py-5 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
+          className="w-full py-5 bg-brand-dark text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
         >
           Proceed to Log in
         </button>

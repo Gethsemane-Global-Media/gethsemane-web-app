@@ -44,8 +44,8 @@ const PlanPage: React.FC<PlanPageProps> = ({
     return (
       <button
         onClick={() => setActiveTab(tab)}
-        className={`font-medium text-lg transition-colors duration-200 cursor-pointer ${
-          isActive ? 'text-brand-dark' : 'text-brand-secondary'
+        className={`text-lg transition-colors duration-200 cursor-pointer ${
+          isActive ? 'text-brand-dark font-semibold' : 'text-brand-neutral font-normal'
         }`}
         aria-pressed={isActive}
       >
@@ -70,7 +70,7 @@ const PlanPage: React.FC<PlanPageProps> = ({
         <div className="mt-5">
           <button
             onClick={onNavigateToCreatePlan}
-            className="w-full py-4 bg-[#212631] text-white rounded-2xl font-bold text-base hover:bg-neutral-800 shadow-sm transition-all cursor-pointer"
+            className="w-full py-4 bg-brand-dark text-white rounded-2xl font-bold text-base hover:bg-neutral-800 shadow-sm transition-all cursor-pointer"
           >
             + Create your own custom plan
           </button>
@@ -85,7 +85,7 @@ const PlanPage: React.FC<PlanPageProps> = ({
                   onClick={() => setActiveCategory(value)}
                   className={`shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#212631] text-white shadow-2xs'
+                      ? 'bg-brand-dark text-white shadow-2xs'
                       : 'bg-white border border-gray-200 text-brand-secondary hover:text-brand-dark'
                   }`}
                 >

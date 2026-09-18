@@ -24,7 +24,7 @@ const ReadingCompletedPage: React.FC<ReadingCompletedPageProps> = ({ planProgres
         </div>
         <button
           onClick={onNavigateBack}
-          className="w-full py-4 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
+          className="w-full py-4 bg-brand-dark text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
         >
           Back to Home
         </button>

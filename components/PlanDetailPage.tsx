@@ -126,7 +126,7 @@ const PlanDetailPage: React.FC<PlanDetailPageProps> = ({ plan, onNavigateBack, o
 
         <main className="flex-grow flex flex-col px-6 pb-28">
           {isCommunity && (
-            <div className="inline-flex items-center gap-1.5 self-start bg-[#5B4D4D]/10 text-[#5B4D4D] text-xs font-semibold px-3 py-1 rounded-full mb-4">
+            <div className="inline-flex items-center gap-1.5 self-start bg-brand-neutral/10 text-brand-neutral text-xs font-semibold px-3 py-1 rounded-full mb-4">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
@@ -135,7 +135,7 @@ const PlanDetailPage: React.FC<PlanDetailPageProps> = ({ plan, onNavigateBack, o
             </div>
           )}
 
-          <h1 className="text-4xl font-bold text-brand-dark leading-tight">{plan.title}</h1>
+          <h1 className="text-3xl font-bold text-brand-dark leading-tight">{plan.title}</h1>
 
           {isCommunity && plan.participantCount !== undefined && (
             <p className="text-brand-secondary mt-2 text-sm">
@@ -169,7 +169,7 @@ const PlanDetailPage: React.FC<PlanDetailPageProps> = ({ plan, onNavigateBack, o
 
           <button
             onClick={() => isCommunity && onJoinPlan ? onJoinPlan(plan) : onStartPlan(plan)}
-            className="w-full py-5 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors mb-4"
+            className="w-full py-5 bg-brand-dark text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors mb-4"
           >
             {isCommunity ? 'Join Plan' : 'Start Plan'}
           </button>
@@ -213,7 +213,7 @@ const PlanDetailPage: React.FC<PlanDetailPageProps> = ({ plan, onNavigateBack, o
       <PlanDetailHeader onNavigateBack={onNavigateBack} />
 
       <main className="flex-grow flex flex-col px-6 pb-28">
-        <h1 className="text-4xl font-bold text-brand-dark leading-tight">{plan.title}</h1>
+        <h1 className="text-3xl font-bold text-brand-dark leading-tight">{plan.title}</h1>
         <p className="text-brand-secondary mt-4 text-[15px] leading-relaxed">
           {plan.longDescription}
         </p>
@@ -242,14 +242,14 @@ const PlanDetailPage: React.FC<PlanDetailPageProps> = ({ plan, onNavigateBack, o
 
         <section className="mt-10">
           <h2 className="text-base font-medium text-brand-accent">Today&apos;s task</h2>
-          <div className="mt-3 bg-[#3E4555] p-5 rounded-2xl text-white min-h-[200px] flex flex-col">
+          <div className="mt-3 bg-brand-primary p-5 rounded-card-lg text-white min-h-[200px] flex flex-col">
             {todaysReading ? (
               <>
-                <div className="inline-block self-start bg-[#6B4F4F] text-white text-xs font-semibold px-3 py-1 rounded-full">
+                <div className="inline-block self-start bg-brand-accent text-white text-xs font-semibold px-3 py-1 rounded-pill">
                   Day {dayOfPlan + 1}
                 </div>
-                <p className="text-4xl font-bold mt-4 leading-tight">{book}</p>
-                <p className="text-4xl font-bold leading-tight">{formatChapterRange(chapters)}</p>
+                <p className="text-3xl font-bold mt-4 leading-tight">{book}</p>
+                <p className="text-3xl font-bold leading-tight">{formatChapterRange(chapters)}</p>
 
                 <div className="flex justify-between items-end mt-auto pt-8">
                   <div>

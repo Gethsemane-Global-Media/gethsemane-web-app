@@ -119,12 +119,13 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onOnboardingComplete })
             ))}
         </div>
 
+        {/* Design System Spec Section 4.3: Pagination / Step Indicator */}
         <footer className="h-20 flex items-center justify-start gap-2 z-10 px-8 pb-4">
           {slides.map((_, index) => (
             <div
               key={index}
-              className={`transition-all duration-300 rounded-full h-2 ${
-                currentStep === index ? 'w-6 bg-brand-dark' : 'w-2 bg-brand-inactive'
+              className={`transition-all duration-300 rounded-pill h-2 ${
+                currentStep === index ? 'w-6 bg-brand-dark' : 'w-2 bg-brand-neutral/30'
               }`}
             />
           ))}

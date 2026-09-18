@@ -16,10 +16,10 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, onSeeMore, className = 'mt-8'
   const isCommunity = plan.type === 'community';
 
   return (
-    <div className={`bg-white p-6 rounded-3xl border border-gray-200/70 ${className}`}>
+    <div className={`bg-white p-6 rounded-card-md border border-gray-200/70 shadow-xs hover:shadow-sm transition-all ${className}`}>
       <div
-        className={`inline-block text-white text-xs font-semibold px-3 py-1 rounded-full mb-4 ${
-          isCommunity ? 'bg-[#5B4D4D]' : 'bg-brand-green'
+        className={`inline-block text-white text-xs font-semibold px-3.5 py-1 rounded-pill mb-4 ${
+          isCommunity ? 'bg-brand-neutral' : 'bg-brand-primary'
         }`}
       >
         {isCommunity ? 'Community plan' : 'My plan'}
@@ -49,7 +49,7 @@ const PlanCard: React.FC<PlanCardProps> = ({ plan, onSeeMore, className = 'mt-8'
         </span>
         <button
           onClick={() => onSeeMore(plan)}
-          className="shrink-0 px-6 py-2.5 bg-[#212631] text-white rounded-full font-semibold text-sm hover:bg-opacity-90 transition-colors"
+          className="shrink-0 px-6 py-2.5 bg-brand-dark text-white rounded-pill font-semibold text-sm hover:bg-opacity-90 transition-colors shadow-xs cursor-pointer"
         >
           {isCommunity && !plan.startDate ? 'Join' : 'See more'}
         </button>

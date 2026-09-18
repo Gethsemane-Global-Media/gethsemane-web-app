@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icon-192.svg" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#49684F" />
+    <meta name="theme-color" content="#59813F" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Gethsemane" />
@@ -29,18 +29,36 @@
         theme: {
           extend: {
             colors: {
-              'brand-bg': '#F7F9F2',
-              'brand-dark': '#2D2D2D',
-              'brand-primary': '#4A4A4A',
-              'brand-secondary': '#AEAEAE',
-              'brand-accent': '#6E673A',
-              'brand-green': '#49684F',
-              'brand-orange': '#D48D3D',
-              'brand-inactive': '#BCBCBC',
-              'brand-nav-active-bg': '#EDEAE2',
+              // 8 Semantic Roles from GKNI Design System Spec (Appendix)
+              'brand-primary': '#59813F',     // color-primary: Gethsemane forest green
+              'brand-primary-2': '#89B46A',   // color-primary-2: lighter green accent / hover
+              'brand-secondary': '#7A4B15',   // color-secondary: earthy warm brown
+              'brand-accent': '#B6710D',      // color-accent: warm gold / amber
+              'brand-dark': '#222735',        // color-dark: deep slate navy
+              'brand-neutral': '#5A4D52',     // color-neutral: muted text & inactive
+              'brand-white': '#FFFFFF',       // color-white
+              'brand-bg': '#F9FFF5',          // color-bg: lightest canvas surface
+
+              // Compatibility Aliases for existing components
+              'brand-green': '#59813F',
+              'brand-orange': '#B6710D',
+              'brand-inactive': '#5A4D52',
+              'brand-nav-active-bg': '#EAF3E4',
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['Poppins', 'Inter', 'sans-serif'],
+            },
+            borderRadius: {
+              'card-lg': '22px',
+              'card-md': '18px',
+              'pill': '999px',
+            },
+            spacing: {
+              'xs': '4px',
+              'sm': '8px',
+              'md': '16px',
+              'lg': '24px',
+              'xl': '40px',
             },
           },
         },
@@ -48,8 +66,25 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+      :root {
+        --color-primary: #59813F;
+        --color-primary-2: #89B46A;
+        --color-secondary: #7A4B15;
+        --color-accent: #B6710D;
+        --color-dark: #222735;
+        --color-neutral: #5A4D52;
+        --color-white: #FFFFFF;
+        --color-bg: #F9FFF5;
+        --radius-pill: 999px;
+        --radius-card-lg: 22px;
+        --radius-card-md: 18px;
+        --font-family: 'Poppins', sans-serif;
+      }
+      body {
+        font-family: var(--font-family);
+      }
       .scrollbar-hide {
         -ms-overflow-style: none;
         scrollbar-width: none;

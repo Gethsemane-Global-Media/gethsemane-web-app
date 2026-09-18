@@ -187,7 +187,7 @@ const CreatePlanPage: React.FC<CreatePlanPageProps> = ({ onNavigateBack, onAddPl
           <button
             onClick={handleCreateClick}
             disabled={!isFormValid}
-            className="w-full py-5 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full py-5 bg-brand-dark text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Create Plan
           </button>

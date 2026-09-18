@@ -572,16 +572,39 @@ const HomePage: React.FC<HomePageProps> = ({
     </section>
   );
 
+  // Design System Spec Section 4.6: Card — Featured/Hero Progress Card
+  // Background: color-primary (#59813F), radius-card-lg (22px), badge: color-accent (#B6710D)
   const todaysTaskSection = planDetails ? (
     <section className="mt-8 pb-24">
-      <h3 className="text-base font-medium text-brand-primary">Today&apos;s task</h3>
-      <div className="mt-3 relative overflow-hidden rounded-2xl p-5 min-h-[130px] bg-gradient-to-r from-[#2F4A35] via-[#4A7350] to-[#7BA67F] flex flex-col justify-end">
-        <div className="inline-block self-start bg-brand-orange text-white text-xs font-semibold px-3 py-1 rounded-full mb-3">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-brand-neutral uppercase tracking-wider">Today&apos;s Reading</h3>
+        <span className="text-xs text-brand-secondary font-medium">{currentDate}</span>
+      </div>
+      <div className="relative overflow-hidden rounded-card-lg p-6 bg-brand-primary text-white shadow-md">
+        <div className="inline-block bg-brand-accent text-white text-xs font-bold px-3.5 py-1 rounded-pill mb-4 shadow-xs">
           Day {planDetails.dayOfPlan}
         </div>
-        <p className="text-4xl font-bold text-white leading-tight">
-          {getBookDisplayName(planDetails.book)}
+        <h2 className="text-3xl font-bold text-white leading-tight">
+          {getBookDisplayName(planDetails.book)} {planDetails.chapters}
+        </h2>
+        <p className="text-sm text-white/80 font-normal mt-1 mb-5">
+          {activePlan?.title || 'Daily Scripture Portion'}
         </p>
+        <div className="flex items-center justify-between pt-3 border-t border-white/15">
+          <div className="flex items-center gap-2 text-white/90 text-xs font-medium">
+            <RefreshIcon size={16} className="text-white/80" />
+            <span>{planDetails.progress}% completed</span>
+          </div>
+          <button
+            onClick={() => onContinueReading(planDetails.book, planDetails.chapters)}
+            className="w-11 h-11 rounded-pill bg-white text-brand-primary flex items-center justify-center shadow-md hover:bg-white/95 transition-all cursor-pointer"
+            aria-label="Continue reading"
+          >
+            <svg className="w-5 h-5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   ) : null;
@@ -615,8 +638,8 @@ const HomePage: React.FC<HomePageProps> = ({
               </div>
             </section>
           ) : (
-            <section className="mt-8 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start">
+            <section className="mt-8">
+              <div className="flex justify-between items-start gap-4">
                 <div className="text-brand-dark">
                     <h2 className="text-3xl">{activePlan.title}</h2>
                 </div>
@@ -624,22 +647,6 @@ const HomePage: React.FC<HomePageProps> = ({
                     <p className="text-sm text-brand-secondary">{currentDate}</p>
                     <h2 className="text-4xl font-bold mt-1 leading-tight">{planDetails.book}</h2>
                     <p className="text-4xl font-bold leading-tight">{planDetails.chapters}</p>
-                </div>
-              </div>
-              <button
-                  onClick={() => onContinueReading(planDetails.book, planDetails.chapters)}
-                  className="w-full mt-4 py-3 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors cursor-pointer shadow-md"
-              >
-                  Continue
-              </button>
-              <div className="flex justify-between items-center mt-4 text-brand-secondary text-sm px-2">
-                <div className="flex items-center gap-2">
-                    <CalendarIcon size={20} />
-                    <span>Day {planDetails.dayOfPlan}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <RefreshIcon size={20} />
-                    <span>{planDetails.progress}% done</span>
                 </div>
               </div>
             </section>

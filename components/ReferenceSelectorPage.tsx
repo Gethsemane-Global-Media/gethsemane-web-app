@@ -203,7 +203,7 @@ const ReferenceSelectorPage: React.FC<ReferenceSelectorPageProps> = ({
         <div className="fixed bottom-24 right-6 z-10">
           <button
             onClick={handleConfirm}
-            className="w-14 h-14 bg-[#212631] text-white rounded-full flex items-center justify-center shadow-lg hover:bg-opacity-90 transition-colors cursor-pointer"
+            className="w-14 h-14 bg-brand-dark text-white rounded-full flex items-center justify-center shadow-lg hover:bg-opacity-90 transition-colors cursor-pointer"
             aria-label="Confirm selection"
             title="Go to chapter"
           >

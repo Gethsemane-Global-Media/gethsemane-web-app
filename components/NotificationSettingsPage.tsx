@@ -272,7 +272,7 @@ const NotificationSettingsPage: React.FC<NotificationSettingsPageProps> = ({ onN
           {isSettingMode ? (
             <button
               onClick={handleSave}
-              className="px-10 py-3 bg-[#212631] text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
+              className="px-10 py-3 bg-brand-dark text-white rounded-full font-semibold text-lg hover:bg-opacity-90 transition-colors"
             >
               Save
             </button>
