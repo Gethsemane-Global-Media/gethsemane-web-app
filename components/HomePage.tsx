@@ -269,7 +269,7 @@ const HomePage: React.FC<HomePageProps> = ({
 
   const doYouKnowSection = (
     <section className="mt-10">
-      <h3 className="text-2xl font-bold text-brand-dark">Do you know!</h3>
+      <h3 className="text-2xl font-bold text-brand-dark">Excerpts</h3>
       <div 
         className="relative mt-4 bg-[#E8EDE3] rounded-2xl min-h-[96px] overflow-hidden"
         onTouchStart={handleTouchStart}
@@ -575,7 +575,7 @@ const HomePage: React.FC<HomePageProps> = ({
   // Design System Spec Section 4.6: Card — Featured/Hero Progress Card
   // Background: color-primary (#59813F), radius-card-lg (22px), badge: color-accent (#B6710D)
   const todaysTaskSection = planDetails ? (
-    <section className="mt-8 pb-24">
+    <section className="mt-8">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-brand-neutral uppercase tracking-wider">Today&apos;s Reading</h3>
         <span className="text-xs text-brand-secondary font-medium">{currentDate}</span>
@@ -638,26 +638,15 @@ const HomePage: React.FC<HomePageProps> = ({
               </div>
             </section>
           ) : (
-            <section className="mt-8">
-              <div className="flex justify-between items-start gap-4">
-                <div className="text-brand-dark">
-                    <h2 className="text-3xl">{activePlan.title}</h2>
-                </div>
-                <div className="text-right shrink-0 ml-4">
-                    <p className="text-sm text-brand-secondary">{currentDate}</p>
-                    <h2 className="text-4xl font-bold mt-1 leading-tight">{planDetails.book}</h2>
-                    <p className="text-4xl font-bold leading-tight">{planDetails.chapters}</p>
-                </div>
-              </div>
-            </section>
+            todaysTaskSection
           )}
 
+          {doYouKnowSection}
           {liveStreamSection}
           {announcementsSection}
           {ministryHubSection}
           {officialChannelsSection}
-          {doYouKnowSection}
-          {todaysTaskSection}
+          <div className="pb-24" />
         </>
       ) : (
          <>
@@ -668,11 +657,11 @@ const HomePage: React.FC<HomePageProps> = ({
             </div>
            </section>
            
+           {doYouKnowSection}
            {liveStreamSection}
            {announcementsSection}
            {ministryHubSection}
            {officialChannelsSection}
-           {doYouKnowSection}
             
             <section className="mt-8 pb-24">
               <h3 className="text-base font-medium text-brand-primary">Today&apos;s task</h3>
