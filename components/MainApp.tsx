@@ -578,7 +578,7 @@ const MainApp: React.FC = () => {
     return (
         <button 
             onClick={() => handleNavigation(tab)}
-            className={`flex flex-col items-center justify-center gap-1 rounded-card-md px-3.5 py-1.5 transition-all duration-200 cursor-pointer ${isActive ? activeClasses : inactiveClasses}`}
+            className={`flex flex-col items-center justify-center gap-1 rounded-card-md px-2 py-1.5 transition-all duration-200 cursor-pointer ${isActive ? activeClasses : inactiveClasses}`}
         >
             {icon}
             <span className="text-[11px] font-medium leading-none">{label}</span>
