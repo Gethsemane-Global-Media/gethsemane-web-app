@@ -34,7 +34,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const settingsItems = [
     { icon: <PlusCircleIcon />, label: 'Create Bible plans', onClick: onNavigateToCreatePlan },
     { icon: <PlayCircleIcon />, label: 'Audio Scripture', onClick: () => {} },
-    { icon: <NotificationIcon />, label: 'Notification settings', onClick: onNavigateToNotificationSettings },
+    { icon: <NotificationIcon />, label: 'Reminder settings', onClick: onNavigateToNotificationSettings },
   ];
 
   const handleShare = async () => {

@@ -170,7 +170,7 @@ const NotificationSettingsPage: React.FC<NotificationSettingsPageProps> = ({ onN
       </header>
 
       <main className="flex-grow flex flex-col px-6 pb-8 overflow-y-auto">
-        <h1 className="text-3xl font-bold text-brand-dark">Notifications</h1>
+        <h1 className="text-3xl font-bold text-brand-dark">Reminder</h1>
 
         <section className="mt-10 mb-8">
           <div className="border-t border-brand-dark/80 mx-2" />
