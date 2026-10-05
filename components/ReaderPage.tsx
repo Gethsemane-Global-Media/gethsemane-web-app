@@ -168,6 +168,9 @@ export default function ReaderPage({
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
 
   const mainRef = useRef<HTMLElement>(null);
+  // Flags the scrollToVerse reset we trigger ourselves (highlight fade) so the
+  // "scroll to top" effect below does not treat it as a new scripture location.
+  const preserveScrollOnVerseClearRef = useRef(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const settingsDropdownRef = useRef<HTMLDivElement>(null);
   const readerContentRef = useRef<HTMLDivElement>(null);
@@ -282,6 +285,7 @@ export default function ReaderPage({
         );
         const clearTimer = setTimeout(() => {
           verseElement.classList.remove('bg-amber-100', 'dark:bg-amber-950/60', 'ring-2', 'ring-brand-green/60');
+          preserveScrollOnVerseClearRef.current = true;
           onScrolledToVerse();
         }, 3500);
         return () => clearTimeout(clearTimer);
@@ -324,9 +328,10 @@ export default function ReaderPage({
   }, [handleNextChapter, handlePrevChapter]);
 
   useEffect(() => {
-    if (scrollToVerse === null) {
+    if (scrollToVerse === null && !preserveScrollOnVerseClearRef.current) {
       mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    preserveScrollOnVerseClearRef.current = false;
     setSelectedVerse(null); // Close popover on chapter change
   }, [currentBook, currentChapter, scrollToVerse]);
 
@@ -403,11 +408,7 @@ export default function ReaderPage({
             />
           </div>
         </header>
-      ) : (
-        <header className="flex items-center justify-end px-6 pt-4 pb-2 shrink-0">
-          <button onClick={() => onSearchingChange(true)} className="p-2.5 bg-white rounded-full border border-gray-200 text-brand-primary hover:bg-gray-50 transition-colors shadow-2xs" aria-label="Search Bible"><SearchIcon size={20} /></button>
-        </header>
-      )}
+      ) : null}
 
       <main ref={mainRef} className="flex-grow p-6 overflow-y-auto pb-40" onClick={() => selectedVerse && setSelectedVerse(null)}>
         {isSearching ? (
@@ -440,7 +441,7 @@ export default function ReaderPage({
             )}
             {!isPlanReadingMode && (
               <div className="flex justify-between items-center mb-6">
-                <button onClick={onOpenReferenceSelector} className="flex items-center gap-2 text-2xl font-medium text-brand-primary" aria-label={`Select book and chapter, current is ${currentBook} ${currentChapter}`}>
+                <button onClick={onOpenReferenceSelector} className="flex items-center gap-2 text-2xl font-medium text-brand-primary whitespace-nowrap shrink-0" aria-label={`Select book and chapter, current is ${currentBook} ${currentChapter}`}>
                   <span>{currentBook} {currentChapter}</span>
                   <ChevronDownIcon />
                 </button>
@@ -458,6 +459,7 @@ export default function ReaderPage({
                           </div>
                       )}
                   </div>
+                  <button onClick={() => onSearchingChange(true)} className="p-2.5 bg-white rounded-full border border-gray-200 text-brand-primary hover:bg-gray-50 transition-colors shadow-2xs" aria-label="Search Bible"><SearchIcon size={20} /></button>
                 </div>
               </div>
             )}
@@ -549,9 +551,9 @@ export default function ReaderPage({
       {!isSearching && !isPlanReadingMode && (
         <div className="fixed bottom-20 left-0 right-0 max-w-md mx-auto bg-brand-bg/95 backdrop-blur-sm z-20">
           <div className="flex justify-between items-center p-4 border-t border-gray-200">
-            <button onClick={handlePrevChapter} disabled={!canGoPrevChapter} aria-disabled={!canGoPrevChapter} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Previous Chapter"><ChevronLeftIcon /><span className="font-medium">Previous</span></button>
+            <button onClick={handlePrevChapter} disabled={!canGoPrevChapter} aria-disabled={!canGoPrevChapter} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Previous Chapter"><ChevronLeftIcon /></button>
             <button onClick={handleToggleAudio} className="text-brand-dark p-3 bg-white rounded-full shadow-md" aria-label={isPlaying ? "Stop audio scripture" : "Play audio scripture"}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</button>
-            <button onClick={handleNextChapter} disabled={!canGoNextChapter} aria-disabled={!canGoNextChapter} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Next Chapter"><span className="font-medium">Next</span><ChevronRightIcon /></button>
+            <button onClick={handleNextChapter} disabled={!canGoNextChapter} aria-disabled={!canGoNextChapter} className="flex items-center gap-2 text-brand-primary disabled:text-brand-inactive p-2" aria-label="Next Chapter"><ChevronRightIcon /></button>
           </div>
         </div>
       )}
