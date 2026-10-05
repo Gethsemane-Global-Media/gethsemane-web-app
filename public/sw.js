@@ -1,9 +1,8 @@
-const CACHE_VERSION = 'behold-pwa-v2';
+const CACHE_VERSION = 'behold-pwa-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
+  '/images/logos/gkni-logo.png',
 ];
 
 self.addEventListener('install', (event) => {
